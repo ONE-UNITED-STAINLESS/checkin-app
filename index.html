@@ -477,7 +477,7 @@
 <script>
     // ********* URL ของ Node.js Backend Server (สลับอัตโนมัติระหว่าง Local & Public Tunnel) *********
     const localURL = 'http://localhost:3000/api';
-    const cloudflareURL = 'https://happy-stingray-98.loca.lt/api';
+    const cloudflareURL = 'https://alter-automobile-javascript-cartoons.trycloudflare.com/api';
     const scriptURL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? localURL
         : cloudflareURL;
@@ -638,9 +638,14 @@
         }
         let body = new URLSearchParams({ action: 'login', username: userVal, password: passVal });
         fetch(scriptURL, { method: 'POST', body: body })
-        .then(r => {
-            if(!r.ok) throw new Error("HTTP error " + r.status);
-            return r.json();
+        .then(async r => {
+            let text = await r.text();
+            try {
+                return JSON.parse(text);
+            } catch(e) {
+                console.error("Server raw response:", text);
+                throw new Error("เซิร์ฟเวอร์ไม่ได้ตอบกลับเป็น JSON (โปรดตรวจสอบการเปิด server.js หรือ Tunnel)");
+            }
         })
         .then(d => {
             if(d.status === 'success') {
@@ -655,7 +660,7 @@
         })
         .catch(err => {
             console.error("Login fetch error:", err);
-            document.getElementById('loginMsg').innerText = '⚠️ ไม่สามารถเชื่อมต่อกับ Node.js Server ได้ (กรุณารัน node server.js)';
+            document.getElementById('loginMsg').innerText = '⚠️ เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + err.message;
         });
     }
 

@@ -616,7 +616,7 @@
             </div>
             <div class="edit-box" style="margin-top: 20px; overflow-y:auto; max-height:300px;"><h3 style="margin-top: 0; font-size: 16px;">⚡ ความเคลื่อนไหวล่าสุด</h3><div id="activityTimeline"></div></div>
             <div class="text-center" style="margin-top: 20px; background: #e0e7ff; padding: 15px; border-radius: var(--radius);">
-                <button class="btn-primary" onclick="exportLogsToCSV()">📊 ดาวน์โหลดข้อมูล Excel / CSV</button>
+                <button class="btn-primary" onclick="openExportExcelModal()">📊 ดาวน์โหลดข้อมูล Excel / CSV (เลือกเดือนได้)</button>
             </div>
         </div>
 
@@ -858,15 +858,65 @@
     </div>
 </div>
 
+<!-- ================= MODAL: EXPORT EXCEL SELECTOR ================= -->
+<div id="exportExcelModal" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(3px); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 15px;">
+    <div style="background: white; border-radius: 16px; width: 100%; max-width: 480px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); position: relative;">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 18px;">
+            <h3 style="margin: 0; color: var(--primary); font-size: 17px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                📊 เลือกช่วงเดือนสำหรับดาวน์โหลด Excel
+            </h3>
+            <button onclick="closeExportExcelModal()" style="background: none; border: none; font-size: 20px; color: #94a3b8; cursor: pointer; padding: 0;">✕</button>
+        </div>
+
+        <div style="margin-bottom: 16px;">
+            <label style="font-weight: 600; font-size: 13px; color: var(--dark); display: block; margin-bottom: 6px;">📅 เลือกเดือนที่ต้องการรายงาน:</label>
+            <select id="expMonthSelect" style="margin-bottom: 8px;">
+                <option value="ALL">-- ทุกเดือน (ส่งออกข้อมูลประวัติทั้งหมด) --</option>
+                <option value="01">มกราคม (01)</option>
+                <option value="02">กุมภาพันธ์ (02)</option>
+                <option value="03">มีนาคม (03)</option>
+                <option value="04">เมษายน (04)</option>
+                <option value="05">พฤษภาคม (05)</option>
+                <option value="06">มิถุนายน (06)</option>
+                <option value="07">กรกฎาคม (07)</option>
+                <option value="08">สิงหาคม (08)</option>
+                <option value="09">กันยายน (09)</option>
+                <option value="10">ตุลาคม (10)</option>
+                <option value="11">พฤศจิกายน (11)</option>
+                <option value="12">ธันวาคม (12)</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <label style="font-weight: 600; font-size: 13px; color: var(--dark); display: block; margin-bottom: 6px;">📆 เลือกปี ค.ศ.:</label>
+            <select id="expYearSelect" style="margin-bottom: 8px;">
+                <option value="ALL">-- ทุกปี --</option>
+                <option value="2026">2026 (พ.ศ. 2569)</option>
+                <option value="2025">2025 (พ.ศ. 2568)</option>
+                <option value="2024">2024 (พ.ศ. 2567)</option>
+            </select>
+        </div>
+
+        <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px 12px; border-radius: 8px; font-size: 12px; color: #1e40af; margin-bottom: 20px; line-height: 1.4;">
+            💡 <strong>คำแนะนำ:</strong> ระบบจะดึงและกรองข้อมูลประวัติการเช็คอิน, OT, คำขอแก้ไขเวลา, คำขอลา และสรุปสถิติตามเดือน/ปี ที่ท่านเลือกให้อัตโนมัติในไฟล์ Excel
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-primary" onclick="confirmExportLogsToCSV()" style="flex: 2; padding: 12px; font-weight: 600;">📥 เริ่มดาวน์โหลดไฟล์ Excel</button>
+            <button class="btn-grey" onclick="closeExportExcelModal()" style="flex: 1; padding: 12px;">ยกเลิก</button>
+        </div>
+    </div>
+</div>
+
 <script>
     // ********* URL ของ Node.js Backend Server (สลับอัตโนมัติระหว่าง Local & Public Ngrok Tunnel) *********
     const localURL = (window.location.origin && window.location.origin.startsWith('http') && !window.location.hostname.includes('github.io'))
         ? (window.location.origin + '/api')
         : 'http://localhost:3000/api';
     const cloudflareURL = 'https://margarine-saved-encrypt.ngrok-free.dev/api';
-    const scriptURL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (window.location.origin && window.location.port === '3000'))
-        ? localURL
-        : cloudflareURL;
+    const scriptURL = (window.location.origin && window.location.origin.startsWith('http')) 
+    ? (window.location.origin + '/api') 
+    : 'http://147.50.253.84:3000/api'; // ใส่ IP VPS ของคุณ
 
     // Fetch Interceptor for Ngrok & Localtunnel Bypass
     const originalFetch = window.fetch;
@@ -2757,6 +2807,386 @@
                 alert("ลบประกาศเรียบร้อยแล้ว!");
                 loadAnnouncements();
             }
+        });
+    }
+
+    // =========================================================
+    // 15. COMPREHENSIVE EXCEL / CSV EXPORT WITH MONTH FILTER (v2.5.0)
+    // Exports: Attendance Logs, OT, Time Requests, Leave Requests & Employee Stats
+    // =========================================================
+    function openExportExcelModal() {
+        let modal = document.getElementById('exportExcelModal');
+        if (modal) {
+            let now = new Date();
+            let currentM = String(now.getMonth() + 1).padStart(2, '0');
+            let currentY = String(now.getFullYear());
+            if (document.getElementById('expMonthSelect')) document.getElementById('expMonthSelect').value = currentM;
+            if (document.getElementById('expYearSelect')) document.getElementById('expYearSelect').value = currentY;
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function closeExportExcelModal() {
+        let modal = document.getElementById('exportExcelModal');
+        if (modal) modal.classList.add('hidden');
+    }
+
+    function confirmExportLogsToCSV() {
+        let selM = document.getElementById('expMonthSelect').value;
+        let selY = document.getElementById('expYearSelect').value;
+        closeExportExcelModal();
+        exportLogsToCSV(selM, selY);
+    }
+
+    function matchesMonthYear(dateStr, selM, selY) {
+        if (!dateStr || dateStr === '-') return false;
+        if (selM === 'ALL' && selY === 'ALL') return true;
+
+        let dStr = String(dateStr).trim().split(' ')[0];
+        let month = '', year = '';
+
+        if (dStr.includes('/')) {
+            let parts = dStr.split('/');
+            if (parts.length === 3) {
+                month = String(parseInt(parts[1], 10)).padStart(2, '0');
+                let yVal = parseInt(parts[2], 10);
+                year = yVal > 2500 ? (yVal - 543).toString() : yVal.toString();
+            }
+        } else if (dStr.includes('-')) {
+            let parts = dStr.split('-');
+            if (parts.length === 3) {
+                if (parts[0].length === 4) {
+                    year = parts[0];
+                    month = String(parseInt(parts[1], 10)).padStart(2, '0');
+                } else {
+                    month = String(parseInt(parts[1], 10)).padStart(2, '0');
+                    let yVal = parseInt(parts[2], 10);
+                    year = yVal > 2500 ? (yVal - 543).toString() : yVal.toString();
+                }
+            }
+        }
+
+        let matchM = (selM === 'ALL' || month === selM);
+        let matchY = (selY === 'ALL' || year === selY);
+        return matchM && matchY;
+    }
+
+    function exportLogsToCSV(selM = 'ALL', selY = 'ALL') {
+        let btn = document.querySelector('button[onclick="openExportExcelModal()"]') || document.querySelector('button[onclick="exportLogsToCSV()"]');
+        let originalText = btn ? btn.innerText : '📊 ดาวน์โหลดข้อมูล Excel / CSV (เลือกเดือนได้)';
+        if (btn) {
+            btn.innerText = "⏳ กำลังดึงข้อมูลจากฐานข้อมูล...";
+            btn.disabled = true;
+        }
+
+        // Build params — send month/year to server so SQL filters directly
+        let logParams = { action: 'get_logs' };
+        let reqParams = { action: 'get_requests' };
+        if (selM !== 'ALL') { logParams.month = selM; reqParams.month = selM; }
+        if (selY !== 'ALL') { logParams.year = selY; reqParams.year = selY; }
+
+        Promise.all([
+            fetch(scriptURL, { method: 'POST', body: new URLSearchParams(logParams) }).then(r => r.json()),
+            fetch(scriptURL, { method: 'POST', body: new URLSearchParams(reqParams) }).then(r => r.json()),
+            fetch(scriptURL, { method: 'POST', body: new URLSearchParams({ action: 'get_users' }) }).then(r => r.json())
+        ])
+        .then(([logsRes, reqsRes, usersRes]) => {
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+
+            // Data already filtered by server via SQL MONTH()/YEAR()
+            let attendanceLogs = logsRes.data || [];
+            let timeReqs = (reqsRes && reqsRes.time) ? reqsRes.time : [];
+            let leaveReqs = (reqsRes && reqsRes.leave) ? reqsRes.leave : [];
+            let usersList = (usersRes && usersRes.data) ? usersRes.data : [];
+
+            let monthNamesDict = {
+                '01': 'มกราคม', '02': 'กุมภาพันธ์', '03': 'มีนาคม', '04': 'เมษายน',
+                '05': 'พฤษภาคม', '06': 'มิถุนายน', '07': 'กรกฎาคม', '08': 'สิงหาคม',
+                '09': 'กันยายน', '10': 'ตุลาคม', '11': 'พฤศจิกายน', '12': 'ธันวาคม'
+            };
+
+            let now = new Date();
+            let dateStamp = `${now.getDate().toString().padStart(2, '0')}-${(now.getMonth() + 1).toString().padStart(2, '0')}-${now.getFullYear()}`;
+            
+            let periodLabel = (selM !== 'ALL' ? `เดือน_${selM}_` : 'ประวัติทั้งหมด_') + (selY !== 'ALL' ? `${selY}` : '');
+            let fileName = `รายงานการลงเวลาและคำขอ_ONE_UNITED_${periodLabel}.xls`;
+
+            let headerTitleLabel = (selM !== 'ALL' && monthNamesDict[selM] ? `ประจำเดือน ${monthNamesDict[selM]} ${selY !== 'ALL' ? parseInt(selY) + 543 : ''}` : `ประวัติทั้งหมด (ข้อมูล ณ วันที่ ${dateStamp})`);
+
+            let excelContent = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head>
+                <meta charset="UTF-8">
+                <!--[if gte mso 9]>
+                <xml>
+                    <x:ExcelWorksheets>
+                        <x:ExcelWorksheet><x:Name>ประวัติการลงเวลาและOT</x:Name><x:WorksheetSource HRef="#sheet1"/></x:ExcelWorksheet>
+                        <x:ExcelWorksheet><x:Name>คำขอแก้ไขเวลาทำงาน</x:Name><x:WorksheetSource HRef="#sheet2"/></x:ExcelWorksheet>
+                        <x:ExcelWorksheet><x:Name>คำขอลาหยุดงาน</x:Name><x:WorksheetSource HRef="#sheet3"/></x:ExcelWorksheet>
+                        <x:ExcelWorksheet><x:Name>สรุปสถิติพนักงาน</x:Name><x:WorksheetSource HRef="#sheet4"/></x:ExcelWorksheet>
+                    </x:ExcelWorksheets>
+                </xml>
+                <![endif]-->
+                <style>
+                    body { font-family: 'Prompt', 'Sarabun', Tahoma, sans-serif; font-size: 13px; }
+                    .main-header { font-size: 16px; font-weight: bold; color: #1e3a8a; background-color: #dbeafe; padding: 10px; border: 1px solid #93c5fd; text-align: center; margin-bottom: 10px; }
+                    .section-header { font-size: 14px; font-weight: bold; color: #ffffff; background-color: #2563eb; padding: 8px; margin-top: 25px; margin-bottom: 10px; }
+                    table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+                    th { background-color: #f1f5f9; color: #0f172a; font-weight: bold; border: 1px solid #cbd5e1; padding: 8px 10px; text-align: left; }
+                    td { border: 1px solid #e2e8f0; padding: 7px 10px; font-size: 12px; }
+                    .status-approved { color: #166534; background-color: #dcfce7; font-weight: bold; text-align: center; }
+                    .status-pending { color: #9a3412; background-color: #ffedd5; font-weight: bold; text-align: center; }
+                    .status-rejected { color: #991b1b; background-color: #fee2e2; font-weight: bold; text-align: center; }
+                </style>
+            </head>
+            <body>
+                <!-- SHEET 1: ประวัติการลงเวลาและ OT -->
+                <div id="sheet1">
+                    <div class="main-header">📊 รายงานประวัติการลงเวลาเข้า-ออกงาน และ OT (${headerTitleLabel}) - ONE UNITED STAINLESS CO., LTD.</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>วันที่-เวลา</th>
+                                <th>ชื่อ-นามสกุลพนักงาน</th>
+                                <th>สถานะการลงเวลา</th>
+                                <th>สถานที่ลงเวลา</th>
+                                <th>ละติจูด (Lat)</th>
+                                <th>ลองจิจูด (Lng)</th>
+                                <th>ระยะห่าง (เมตร)</th>
+                                <th>รูปถ่ายสแกนใบหน้า</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            if (attendanceLogs.length === 0) {
+                excelContent += `<tr><td colspan="9" style="text-align:center; color:#64748b;">ไม่มีข้อมูลประวัติการลงเวลาในช่วงเดือนที่เลือก</td></tr>`;
+            } else {
+                attendanceLogs.forEach((log, idx) => {
+                    let dt = log[0] || '-';
+                    let empName = log[1] || '-';
+                    let status = log[2] || '-';
+                    let lat = log[3] || '-';
+                    let lng = log[4] || '-';
+                    let dist = log[5] || '-';
+                    let loc = log[6] || '-';
+                    let imgUrl = log[7] || '-';
+                    let fullImgUrl = isValidImageUrl(imgUrl) ? getFullImageUrl(imgUrl) : '-';
+
+                    excelContent += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${dt}</td>
+                            <td><b>${empName}</b></td>
+                            <td><b>${status}</b></td>
+                            <td>${loc}</td>
+                            <td>${lat}</td>
+                            <td>${lng}</td>
+                            <td>${dist}</td>
+                            <td>${fullImgUrl !== '-' ? `<a href="${fullImgUrl}" target="_blank">ดูรูปถ่าย</a>` : '-'}</td>
+                        </tr>`;
+                });
+            }
+
+            excelContent += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SHEET 2: คำขอแก้ไขเวลาทำงาน -->
+                <div id="sheet2">
+                    <div class="section-header">⏰ รายงานประวัติการยื่นคำขอแก้ไขเวลาทำงาน (${headerTitleLabel})</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>รหัสคำขอ</th>
+                                <th>วันที่ยื่นคำขอ</th>
+                                <th>ชื่อ-นามสกุลพนักงาน</th>
+                                <th>ประเภทคำขอ</th>
+                                <th>วันที่/เวลา ที่ขอปรับปรุง</th>
+                                <th>เหตุผลของพนักงาน</th>
+                                <th>สถานะการอนุมัติ HR</th>
+                                <th>เอกสารหลักฐานแนบ</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            if (timeReqs.length === 0) {
+                excelContent += `<tr><td colspan="8" style="text-align:center; color:#64748b;">ไม่มีรายการคำขอแก้ไขเวลาทำงานในช่วงเดือนที่เลือก</td></tr>`;
+            } else {
+                timeReqs.forEach((r) => {
+                    let reqId = r[0] || '-';
+                    let reqDate = r[1] || '-';
+                    let empName = r[2] || '-';
+                    let reqType = r[3] || '-';
+                    let targetDetail = r[4] || '-';
+                    let reason = r[5] || '-';
+                    let status = r[8] || r[7] || 'Pending';
+                    let imgUrl = r[6] || '-';
+                    let fullImgUrl = isValidImageUrl(imgUrl) ? getFullImageUrl(imgUrl) : '-';
+
+                    let statusClass = status === 'Approved' ? 'status-approved' : (status === 'Rejected' ? 'status-rejected' : 'status-pending');
+                    let statusTxt = status === 'Approved' ? 'อนุมัติแล้ว' : (status === 'Rejected' ? 'ไม่อนุมัติ' : 'รอตรวจสอบ');
+
+                    excelContent += `
+                        <tr>
+                            <td>${reqId}</td>
+                            <td>${reqDate}</td>
+                            <td><b>${empName}</b></td>
+                            <td>${reqType}</td>
+                            <td>${targetDetail}</td>
+                            <td>${reason}</td>
+                            <td class="${statusClass}">${statusTxt}</td>
+                            <td>${fullImgUrl !== '-' ? `<a href="${fullImgUrl}" target="_blank">ดูเอกสารหลักฐาน</a>` : '-'}</td>
+                        </tr>`;
+                });
+            }
+
+            excelContent += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SHEET 3: คำขอลาหยุดงาน -->
+                <div id="sheet3">
+                    <div class="section-header">🗓️ รายงานประวัติการยื่นคำขอลาหยุดงาน (${headerTitleLabel})</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>รหัสคำขอ</th>
+                                <th>วันที่ยื่นคำขอ</th>
+                                <th>ชื่อ-นามสกุลพนักงาน</th>
+                                <th>ประเภทการลา</th>
+                                <th>วันที่เริ่มลา</th>
+                                <th>วันที่สิ้นสุดลา</th>
+                                <th>จำนวนวันลา</th>
+                                <th>เหตุผลการขอลา</th>
+                                <th>สถานะการอนุมัติ HR</th>
+                                <th>ใบรับรองแพทย์/เอกสารแนบ</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            if (leaveReqs.length === 0) {
+                excelContent += `<tr><td colspan="10" style="text-align:center; color:#64748b;">ไม่มีรายการคำขอลาหยุดงานในช่วงเดือนที่เลือก</td></tr>`;
+            } else {
+                leaveReqs.forEach((r) => {
+                    let reqId = r[0] || '-';
+                    let reqDate = r[1] || '-';
+                    let empName = r[2] || '-';
+                    let leaveType = r[3] || '-';
+                    let startDate = r[4] || '-';
+                    let endDate = r[5] || '-';
+                    let daysCount = r[6] || '-';
+                    let reason = r[7] || '-';
+                    let status = r[10] || r[9] || 'Pending';
+                    let imgUrl = r[8] || '-';
+                    let fullImgUrl = isValidImageUrl(imgUrl) ? getFullImageUrl(imgUrl) : '-';
+
+                    let statusClass = status === 'Approved' ? 'status-approved' : (status === 'Rejected' ? 'status-rejected' : 'status-pending');
+                    let statusTxt = status === 'Approved' ? 'อนุมัติแล้ว' : (status === 'Rejected' ? 'ไม่อนุมัติ' : 'รอตรวจสอบ');
+
+                    excelContent += `
+                        <tr>
+                            <td>${reqId}</td>
+                            <td>${reqDate}</td>
+                            <td><b>${empName}</b></td>
+                            <td>${leaveType}</td>
+                            <td>${startDate}</td>
+                            <td>${endDate}</td>
+                            <td><b>${daysCount} วัน</b></td>
+                            <td>${reason}</td>
+                            <td class="${statusClass}">${statusTxt}</td>
+                            <td>${fullImgUrl !== '-' ? `<a href="${fullImgUrl}" target="_blank">ดูเอกสารแนบ</a>` : '-'}</td>
+                        </tr>`;
+                });
+            }
+
+            excelContent += `
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- SHEET 4: สรุปสถิติรายบุคคล -->
+                <div id="sheet4">
+                    <div class="section-header">👥 รายงานสรุปสถิติจำนวนวันทำงาน OT และใบลา รายพนักงาน (${headerTitleLabel})</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ลำดับ</th>
+                                <th>ชื่อเข้าใช้งาน (Username)</th>
+                                <th>ชื่อ-นามสกุลจริง</th>
+                                <th>ระดับสิทธิ์</th>
+                                <th>จำนวนวันมาทำงาน</th>
+                                <th>จำนวนครั้งเข้าสาย</th>
+                                <th>จำนวนครั้งทำ OT</th>
+                                <th>จำนวนวันลาหยุด</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+            if (usersList.length === 0) {
+                excelContent += `<tr><td colspan="8" style="text-align:center; color:#64748b;">ไม่มีข้อมูลรายชื่อพนักงาน</td></tr>`;
+            } else {
+                usersList.forEach((u, idx) => {
+                    let uname = u[0] || '-';
+                    let role = u[2] || 'employee';
+                    let realName = u[3] || uname;
+
+                    let uLogs = attendanceLogs.filter(l => l[1] === realName || l[1] === uname);
+                    let uLeaves = leaveReqs.filter(l => (l[2] === realName || l[2] === uname) && (l[10] === 'Approved' || l[9] === 'Approved'));
+
+                    let presentCount = uLogs.filter(l => l[2] && l[2].includes('เข้างาน')).length;
+                    let otCount = uLogs.filter(l => l[2] && l[2].includes('OT')).length;
+                    let lateCount = uLogs.filter(l => {
+                        if (l[2] && l[2].includes('เข้างาน') && !l[2].includes('ลืม') && !l[2].includes('OT')) {
+                            let timePart = l[0] ? l[0].split(' ')[1] : '';
+                            return parseTimeToMinutes(timePart) > parseTimeToMinutes(workConfig.start);
+                        }
+                        return false;
+                    }).length;
+
+                    let leaveDaysCount = uLeaves.reduce((acc, curr) => acc + (parseFloat(curr[6]) || 1), 0);
+
+                    excelContent += `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${uname}</td>
+                            <td><b>${realName}</b></td>
+                            <td>${role}</td>
+                            <td><b style="color:#166534;">${presentCount} วัน</b></td>
+                            <td><b style="color:#c2410c;">${lateCount} ครั้ง</b></td>
+                            <td><b style="color:#2563eb;">${otCount} ครั้ง</b></td>
+                            <td><b style="color:#7e22ce;">${leaveDaysCount} วัน</b></td>
+                        </tr>`;
+                });
+            }
+
+            excelContent += `
+                        </tbody>
+                    </table>
+                </div>
+            </body>
+            </html>`;
+
+            let blob = new Blob(['\uFEFF' + excelContent], { type: 'application/vnd.ms-excel;charset=utf-8' });
+            let link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        })
+        .catch(err => {
+            console.error("Export Excel Error:", err);
+            if (btn) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
+            alert("เกิดข้อผิดพลาดในการดึงข้อมูลสำหรับสร้างไฟล์ Excel: " + err.message);
         });
     }
 </script>

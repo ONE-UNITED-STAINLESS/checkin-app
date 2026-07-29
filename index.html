@@ -219,6 +219,39 @@
     </div>
 </div>
 
+<!-- ================= Modal ป๊อปอัพประกาศข่าวสารอัตโนมัติ (สำหรับพนักงาน) ================= -->
+<div id="announcementPopupModal" class="hidden" onclick="if(event.target === this) closeAnnouncementPopup();" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(8px); z-index: 45000; display: flex; align-items: center; justify-content: center; padding: 16px;">
+    <div style="background: #ffffff; border-radius: 24px; max-width: 520px; width: 100%; padding: 24px; position: relative; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.9); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 90vh; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 22px;">📢</span>
+                <div>
+                    <h3 style="margin: 0; font-size: 17px; color: var(--dark); font-weight: 700;">ประกาศสำคัญจาก HR</h3>
+                    <span id="popAncTime" style="font-size: 11px; color: var(--gray); font-weight: 500;">-</span>
+                </div>
+            </div>
+            <button onclick="closeAnnouncementPopup()" style="background: #f1f5f9; color: #64748b; border-radius: 50%; width: 32px; height: 32px; padding: 0; font-size: 16px; margin: 0; line-height: 32px; box-shadow: none; border: none; cursor: pointer;">✕</button>
+        </div>
+        
+        <div style="overflow-y: auto; flex-grow: 1; padding-right: 4px;">
+            <h4 id="popAncTitle" style="margin: 0 0 10px 0; font-size: 17px; color: var(--primary); font-weight: 700; line-height: 1.4;">-</h4>
+            <p id="popAncContent" style="margin: 0 0 12px 0; font-size: 14px; color: #334155; line-height: 1.6; white-space: pre-wrap;">-</p>
+            
+            <div id="popAncImgWrap" class="hidden" style="margin-top: 10px; text-align: center; background: #f8fafc; border-radius: 12px; padding: 8px; border: 1px solid #e2e8f0;">
+                <img id="popAncImg" src="" alt="รูปภาพประกาศ" style="max-width: 100%; max-height: 350px; border-radius: 8px; object-fit: contain; cursor: pointer;" onclick="openImageModal(this.src)">
+            </div>
+        </div>
+
+        <div style="margin-top: 15px; border-top: 1px solid #f1f5f9; padding-top: 12px; flex-shrink: 0;">
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #475569; cursor: pointer; user-select: none; margin-bottom: 12px;">
+                <input type="checkbox" id="chkHideAnc1Day" style="width: 17px; height: 17px; accent-color: var(--primary); cursor: pointer;">
+                <span>ไม่ต้องแสดงประกาศนี้อีกภายใน 1 วัน (24 ชั่วโมง)</span>
+            </label>
+            <button class="btn-primary" onclick="closeAnnouncementPopup()" style="width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px;">รับทราบประกาศ</button>
+        </div>
+    </div>
+</div>
+
 <!-- ================= Modal ป๊อปอัพประวัติการอัปเดตระบบ (Changelog v2.5.0) ================= -->
 <div id="versionModal" class="hidden" onclick="if(event.target === this) closeVersionModal();" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 50000; display: flex; align-items: center; justify-content: center; padding: 16px;">
     <div style="background: #ffffff; border-radius: 20px; max-width: 520px; width: 100%; padding: 24px; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.9); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 85vh; display: flex; flex-direction: column;">
@@ -784,15 +817,19 @@
 
             <!-- ================= ส่วนจัดการประกาศข่าวสารจาก HR ================= -->
             <hr style="margin:25px 0 20px 0; border:1px solid #e5e7eb;">
-            <h3 style="margin-top:0; font-size: 16px; color:var(--dark); font-weight:700;">📢 จัดการประกาศข่าวสารสำหรับพนักงาน</h3>
+            <h3 id="ancFormTitle" style="margin-top:0; font-size: 16px; color:var(--dark); font-weight:700;">📢 จัดการประกาศข่าวสารสำหรับพนักงาน</h3>
             <div class="edit-box" style="margin-top:0; background:#f0f9ff; border-color:#bae6fd;">
+                <input type="hidden" id="editAncId">
                 <input type="text" id="ancTitle" placeholder="หัวข้อประกาศ (เช่น ประกาศวันหยุดเทศกาล / แจ้งกำหนดการ)" style="font-weight: 600;">
                 <textarea id="ancContent" rows="3" placeholder="ข้อความรายละเอียดประกาศ..." style="margin-top: 8px; font-family: inherit; font-size: 13px; padding: 10px; width: 100%; border: 1px solid #cbd5e1; border-radius: 8px;"></textarea>
                 <div style="margin-top: 8px;">
                     <label style="font-size: 12px; color: var(--gray); font-weight: 500;">แนบรูปภาพประกาศ (ตัวเลือก):</label>
                     <input type="file" id="ancFile" accept="image/*" style="padding: 8px; background: white; margin-top: 4px;">
                 </div>
-                <button class="btn-primary" onclick="postAnnouncement()" style="width: 100%; margin-top: 12px;">📢 โพสต์ประกาศข่าวสาร</button>
+                <div class="flex-gap mt-3">
+                    <button class="btn-primary" id="btnSaveAnc" onclick="postAnnouncement()" style="flex:1;">📢 โพสต์ประกาศข่าวสาร</button>
+                    <button class="btn-outline hidden" id="btnCancelAnc" onclick="cancelEditAnc()" style="flex:1;">ยกเลิก</button>
+                </div>
                 <p id="ancMsg" style="margin: 8px 0 0 0; font-size: 13px; font-weight: 600; color: var(--success); text-align: center;"></p>
             </div>
 
@@ -2460,9 +2497,10 @@
     }
 
     // =========================================================
-    // 14. ANNOUNCEMENTS (HR Notices)
+    // 14. ANNOUNCEMENTS (HR Notices & Auto-Popups)
     // =========================================================
     let allAnnouncements = [];
+    let currentActivePopupAncId = null;
 
     function renderEmpAnnouncements(list) {
         let box = document.getElementById('empNoticeBox');
@@ -2472,6 +2510,8 @@
             return;
         }
         let latest = list[0];
+        currentActivePopupAncId = latest.id;
+
         document.getElementById('empNoticeTitle').innerText = latest.title || 'ประกาศจาก HR';
         document.getElementById('empNoticeContent').innerText = latest.content || '';
         document.getElementById('empNoticeTime').innerText = (latest.created_at || '') + (latest.author ? ' โดย ' + latest.author : '');
@@ -2485,6 +2525,70 @@
             imgContainer.classList.add('hidden');
         }
         box.classList.remove('hidden');
+
+        // ================= 24-HOUR AUTO POPUP LOGIC =================
+        let hideUntil = localStorage.getItem('hide_anc_' + latest.id);
+        if (!hideUntil || Date.now() > parseInt(hideUntil)) {
+            showAnnouncementPopup(latest);
+        }
+    }
+
+    function showAnnouncementPopup(anc) {
+        let modal = document.getElementById('announcementPopupModal');
+        if (!modal) return;
+
+        document.getElementById('popAncTitle').innerText = anc.title || 'ประกาศจาก HR';
+        document.getElementById('popAncContent').innerText = anc.content || '';
+        document.getElementById('popAncTime').innerText = (anc.created_at || '') + (anc.author ? ' โดย ' + anc.author : '');
+
+        let imgWrap = document.getElementById('popAncImgWrap');
+        let popImg = document.getElementById('popAncImg');
+
+        if (isValidImageUrl(anc.image_url)) {
+            let fullUrl = getFullImageUrl(anc.image_url);
+            let cacheKey = 'cached_anc_img_' + anc.id;
+            let cachedData = localStorage.getItem(cacheKey);
+
+            if (cachedData) {
+                popImg.src = cachedData;
+                imgWrap.classList.remove('hidden');
+            } else {
+                popImg.src = fullUrl;
+                imgWrap.classList.remove('hidden');
+
+                // Cache image in web storage (localStorage) for zero loading time
+                fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': 'true' } })
+                .then(res => res.blob())
+                .then(blob => {
+                    let reader = new FileReader();
+                    reader.onloadend = function() {
+                        try {
+                            localStorage.setItem(cacheKey, reader.result);
+                        } catch(e) {}
+                    };
+                    reader.readAsDataURL(blob);
+                })
+                .catch(err => console.error("Image cache error:", err));
+            }
+        } else {
+            imgWrap.classList.add('hidden');
+        }
+
+        let chk = document.getElementById('chkHideAnc1Day');
+        if (chk) chk.checked = false;
+
+        modal.classList.remove('hidden');
+    }
+
+    function closeAnnouncementPopup() {
+        let modal = document.getElementById('announcementPopupModal');
+        if (modal) modal.classList.add('hidden');
+
+        let chk = document.getElementById('chkHideAnc1Day');
+        if (chk && chk.checked && currentActivePopupAncId) {
+            let expireTime = Date.now() + (24 * 60 * 60 * 1000); // 24 ชั่วโมง (1 วัน)
+            localStorage.setItem('hide_anc_' + currentActivePopupAncId, expireTime.toString());
+        }
     }
 
     function loadAnnouncements() {
@@ -2508,28 +2612,67 @@
             return;
         }
         let html = '';
-        list.forEach(a => {
+        list.forEach((a, idx) => {
             let imgBtn = isValidImageUrl(a.image_url) ? `<button class="btn-primary" onclick="openImageModal('${a.image_url}')" style="padding:3px 8px; font-size:11px;">🖼️ ดูรูป</button>` : '-';
             html += `<tr>
                 <td>${a.created_at || '-'}</td>
                 <td><b>${a.title || '-'}</b><br><span style="font-size:12px; color:#475569;">${a.content || ''}</span></td>
                 <td>${imgBtn}</td>
-                <td><button class="btn-outline" onclick="deleteAnnouncement(${a.id})" style="padding:3px 8px; font-size:11px;">🗑️ ลบ</button></td>
+                <td>
+                    <div style="display:flex; gap:4px;">
+                        <button class="btn-yellow" onclick="openEditAncByIndex(${idx})" style="padding:3px 8px; font-size:11px;">✏️ แก้ไข</button>
+                        <button class="btn-outline" onclick="deleteAnnouncement(${a.id})" style="padding:3px 8px; font-size:11px;">🗑️ ลบ</button>
+                    </div>
+                </td>
             </tr>`;
         });
         tbody.innerHTML = html;
     }
 
+    function openEditAncByIndex(idx) {
+        let anc = allAnnouncements[idx];
+        if (!anc) return;
+
+        document.getElementById('editAncId').value = anc.id;
+        document.getElementById('ancTitle').value = anc.title || '';
+        document.getElementById('ancContent').value = anc.content || '';
+        document.getElementById('ancFormTitle').innerText = "✏️ แก้ไขประกาศข่าวสาร (ID: " + anc.id + ")";
+        
+        let btnSave = document.getElementById('btnSaveAnc');
+        if (btnSave) btnSave.innerText = "💾 บันทึกการแก้ไขประกาศ";
+        
+        let btnCancel = document.getElementById('btnCancelAnc');
+        if (btnCancel) btnCancel.classList.remove('hidden');
+
+        document.getElementById('ancTitle').focus();
+    }
+
+    function cancelEditAnc() {
+        document.getElementById('editAncId').value = '';
+        document.getElementById('ancTitle').value = '';
+        document.getElementById('ancContent').value = '';
+        if (document.getElementById('ancFile')) document.getElementById('ancFile').value = '';
+        document.getElementById('ancFormTitle').innerText = "📢 จัดการประกาศข่าวสารสำหรับพนักงาน";
+        
+        let btnSave = document.getElementById('btnSaveAnc');
+        if (btnSave) btnSave.innerText = "📢 โพสต์ประกาศข่าวสาร";
+        
+        let btnCancel = document.getElementById('btnCancelAnc');
+        if (btnCancel) btnCancel.classList.add('hidden');
+    }
+
     function postAnnouncement() {
+        let editId = document.getElementById('editAncId').value;
         let title = document.getElementById('ancTitle').value.trim();
         let content = document.getElementById('ancContent').value.trim();
         let fileInput = document.getElementById('ancFile');
-        let msg = document.getElementById('ancMsg');
 
         if (!title && !content) return alert("กรุณาระบุหัวข้อหรือข้อความประกาศอย่างน้อย 1 รายการ");
 
+        let sendAction = editId ? 'edit_announcement' : 'add_announcement';
         let sendData = {
-            action: 'add_announcement',
+            action: sendAction,
+            id: editId,
             title: title || 'ประกาศจาก HR',
             content: content,
             author: currentUser || 'HR'
@@ -2550,19 +2693,17 @@
 
     function executePostAnnouncement(data) {
         let msg = document.getElementById('ancMsg');
-        if (msg) msg.innerText = "กำลังบันทึกและโพสต์ประกาศ...";
+        if (msg) msg.innerText = "กำลังบันทึก...";
         fetch(scriptURL, { method: 'POST', body: new URLSearchParams(data) })
         .then(r => r.json())
         .then(res => {
             if (res.status === 'success') {
-                if (msg) msg.innerText = "✅ โพสต์ประกาศข่าวสารเรียบร้อยแล้ว!";
-                document.getElementById('ancTitle').value = '';
-                document.getElementById('ancContent').value = '';
-                if (document.getElementById('ancFile')) document.getElementById('ancFile').value = '';
+                if (msg) msg.innerText = data.id ? "✅ บันทึกการแก้ไขประกาศเรียบร้อยแล้ว!" : "✅ โพสต์ประกาศข่าวสารเรียบร้อยแล้ว!";
+                cancelEditAnc();
                 loadAnnouncements();
                 setTimeout(() => { if (msg) msg.innerText = ''; }, 3000);
             } else {
-                alert("เกิดข้อผิดพลาด: " + (res.message || "ไม่สามารถโพสต์ประกาศได้"));
+                alert("เกิดข้อผิดพลาด: " + (res.message || "ไม่สามารถดำเนินการได้"));
                 if (msg) msg.innerText = '';
             }
         })

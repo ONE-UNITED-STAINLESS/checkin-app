@@ -163,16 +163,20 @@
 <style> @keyframes scaleUp { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } } </style>
 
 <!-- ================= Modal ป๊อปอัพแสดงรูปภาพแบบไม่ต้องเปิดหน้าใหม่ ================= -->
-<div id="imageModal" class="hidden" onclick="if(event.target === this) closeImageModal();" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 30000; display: flex; align-items: center; justify-content: center; padding: 16px;">
+<div id="imageModal" class="hidden" onclick="if(event.target === this) closeImageModal();" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 50000; display: flex; align-items: center; justify-content: center; padding: 16px;">
     <div style="background: #ffffff; border-radius: 20px; max-width: 520px; width: 100%; padding: 20px; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.9); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
             <h3 style="margin: 0; font-size: 16px; color: var(--dark); font-weight: 700;">🖼️ รูปภาพแนบ / รูปถ่ายเช็คอิน</h3>
             <button onclick="closeImageModal()" style="background: #f1f5f9; color: #64748b; border-radius: 50%; width: 32px; height: 32px; padding: 0; font-size: 16px; margin: 0; line-height: 32px; box-shadow: none; border: none; cursor: pointer;">✕</button>
         </div>
-        <div style="text-align: center; background: #0f172a; border-radius: 12px; overflow: hidden; padding: 8px; max-height: 70vh; display: flex; align-items: center; justify-content: center;">
-            <img id="modalImagePreview" src="" alt="รูปภาพตัวอย่าง" style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+        <div style="text-align: center; background: #0f172a; border-radius: 12px; overflow: hidden; padding: 8px; max-height: 60vh; display: flex; align-items: center; justify-content: center;">
+            <img id="modalImagePreview" src="" alt="รูปภาพตัวอย่าง" onclick="openDriveLinkDirectly()" title="คลิกเพื่อเปิดดูไฟล์ต้นฉบับ" style="max-width: 100%; max-height: 55vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); cursor: pointer;" onerror="handleImageError()">
+            <div id="modalImgError" class="hidden" style="color: #cbd5e1; padding: 20px 10px; font-size: 14px; text-align: center;">
+                <p id="modalErrMsgText" style="margin: 0 0 12px 0;">⚠️ ไม่สามารถโหลดรูปพรีวิวโดยตรงได้</p>
+                <button onclick="openDriveLinkDirectly()" class="btn-primary" style="padding: 10px 18px; font-size: 14px; font-weight: 600; border-radius: 10px;"><span id="modalErrBtnText">📂 คลิกตรงนี้เพื่อเปิดดูไฟล์บน Google Drive</span></button>
+            </div>
         </div>
-        <div style="margin-top: 15px; text-align: center;">
+        <div style="margin-top: 12px;">
             <button class="btn-grey" onclick="closeImageModal()" style="width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px;">ปิดหน้าต่าง</button>
         </div>
     </div>
@@ -695,16 +699,37 @@
                     <button class="btn-outline hidden" id="btnCancelLoc" onclick="cancelEditLoc()" style="flex:1;">ยกเลิก</button>
                 </div>
             </div>
-            <div class="table-responsive mt-3"><table><thead><tr><th>ชื่อสถานที่</th><th>รัศมี (ม.)</th><th>จัดการ</th></tr></thead><tbody id="tb-locations"></tbody></table></div>
+
+            <!-- ================= ตารางรายการสถานที่ / จุดเช็คอิน ================= -->
+            <div style="margin-top: 20px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--dark); font-weight: 700;">📋 รายการจุดเช็คอินทั้งหมดในระบบ</h4>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ชื่อสถานที่</th>
+                                <th>ละติจูด / ลองจิจูด</th>
+                                <th>รัศมี</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-locations">
+                            <tr><td colspan="4" class="text-center" style="color:var(--gray);">กำลังโหลดพิกัดสถานที่...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // ********* URL ของ Node.js Backend Server (สลับอัตโนมัติระหว่าง Local & Public Tunnel) *********
-    const localURL = 'http://localhost:3000/api';
+    // ********* URL ของ Node.js Backend Server (สลับอัตโนมัติระหว่าง Local & Public Ngrok Tunnel) *********
+    const localURL = (window.location.origin && window.location.origin.startsWith('http') && !window.location.hostname.includes('github.io'))
+        ? (window.location.origin + '/api')
+        : 'http://localhost:3000/api';
     const cloudflareURL = 'https://margarine-saved-encrypt.ngrok-free.dev/api';
-    const scriptURL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    const scriptURL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || (window.location.origin && window.location.port === '3000'))
         ? localURL
         : cloudflareURL;
 
@@ -742,6 +767,129 @@
 
     let currentMainLogsPage = 1;
     const mainLogsPerPage = 50;
+
+    function parseTimeToMinutes(tStr) {
+        if (!tStr) return 0;
+        let parts = tStr.trim().split(':');
+        if (parts.length < 2) return 0;
+        let hours = parseInt(parts[0], 10) || 0;
+        let minutes = parseInt(parts[1], 10) || 0;
+        return hours * 60 + minutes;
+    }
+
+    let currentModalOriginalUrl = '';
+    let currentModalFileId = '';
+
+    function isValidImageUrl(url) {
+        if (!url || typeof url !== 'string' || url.trim() === '' || url.trim() === '-') return false;
+        let u = url.trim();
+        return u.startsWith('http') || u.startsWith('/uploads') || u.startsWith('uploads');
+    }
+
+    function getFullImageUrl(url) {
+        if (!isValidImageUrl(url)) return '';
+        let u = url.trim();
+
+        if (u.startsWith('http://') || u.startsWith('https://')) {
+            if (u.includes('ngrok-free.dev') || u.includes('ngrok.io')) {
+                u = u.replace(/^http:\/\//i, 'https://');
+            }
+            return u;
+        }
+
+        let baseUrl = scriptURL.replace(/\/api\/?$/, '');
+        if (baseUrl.includes('ngrok-free.dev') || baseUrl.includes('ngrok.io')) {
+            baseUrl = baseUrl.replace(/^http:\/\//i, 'https://');
+        } else if (window.location.protocol === 'https:' && baseUrl.startsWith('http://')) {
+            baseUrl = baseUrl.replace(/^http:\/\//i, 'https://');
+        }
+
+        if (u.startsWith('/')) return baseUrl + u;
+        return baseUrl + '/' + u;
+    }
+
+    function getDriveFileId(url) {
+        if (!url || typeof url !== 'string' || url === '-') return '';
+        let driveIdMatch = url.match(/\/file\/d\/([^\/\?]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+        return driveIdMatch ? driveIdMatch[1] : '';
+    }
+
+    function openImageModal(url) {
+        if (!isValidImageUrl(url)) return;
+        let fullUrl = getFullImageUrl(url);
+        currentModalOriginalUrl = fullUrl;
+        currentModalFileId = getDriveFileId(fullUrl);
+
+        let modal = document.getElementById('imageModal');
+        let imgPreview = document.getElementById('modalImagePreview');
+        let errDiv = document.getElementById('modalImgError');
+
+        if (modal && imgPreview) {
+            imgPreview.removeAttribute('data-tried-thumb');
+            imgPreview.style.display = 'block';
+            if (errDiv) errDiv.classList.add('hidden');
+
+            if (currentModalFileId) {
+                imgPreview.src = `https://lh3.googleusercontent.com/d/${currentModalFileId}`;
+            } else {
+                fetch(fullUrl, {
+                    headers: { 'ngrok-skip-browser-warning': 'true', 'bypass-tunnel-reminder': 'true' }
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status);
+                    return res.blob();
+                })
+                .then(blob => {
+                    imgPreview.src = URL.createObjectURL(blob);
+                })
+                .catch(err => {
+                    console.warn('Fetch image failed, trying direct src fallback:', err);
+                    imgPreview.src = fullUrl;
+                });
+            }
+
+            modal.classList.remove('hidden');
+        }
+    }
+
+    function handleImageError() {
+        let imgPreview = document.getElementById('modalImagePreview');
+        let errDiv = document.getElementById('modalImgError');
+        let errMsg = document.getElementById('modalErrMsgText');
+        let errBtn = document.getElementById('modalErrBtnText');
+        
+        if (currentModalFileId && imgPreview && !imgPreview.getAttribute('data-tried-thumb')) {
+            imgPreview.setAttribute('data-tried-thumb', 'true');
+            imgPreview.src = `https://drive.google.com/thumbnail?id=${currentModalFileId}&sz=w1000`;
+            return;
+        }
+
+        if (imgPreview) imgPreview.style.display = 'none';
+        if (errDiv) {
+            if (currentModalOriginalUrl.includes('drive.google.com')) {
+                if (errMsg) errMsg.innerText = "⚠️ ไม่สามารถโหลดรูปพรีวิวโดยตรงได้ (ไฟล์ถูกตั้งค่าความเป็นส่วนตัวใน Google Drive)";
+                if (errBtn) errBtn.innerText = "📂 คลิกตรงนี้เพื่อเปิดดูไฟล์บน Google Drive";
+            } else {
+                if (errMsg) errMsg.innerText = "⚠️ ไม่พบไฟล์รูปภาพนี้บนเซิร์ฟเวอร์ (ไฟล์เก่าก่อนล้างฐานข้อมูลอาจถูกลบออกไปแล้ว)";
+                if (errBtn) errBtn.innerText = "🔗 คลิกเพื่อลองเปิดดูรูปภาพขนาดเต็มในแท็บใหม่";
+            }
+            errDiv.classList.remove('hidden');
+        }
+    }
+
+    function openDriveLinkDirectly() {
+        if (!currentModalOriginalUrl || currentModalOriginalUrl === '-') {
+            return alert("ไม่พบลิงก์ Google Drive ของรูปภาพนี้");
+        }
+        window.open(currentModalOriginalUrl, '_blank', 'noopener,noreferrer');
+    }
+
+    function closeImageModal() {
+        let modal = document.getElementById('imageModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    }
 
     function updateClocks() {
         const now = new Date();
@@ -790,12 +938,10 @@
                 document.getElementById('empSec').classList.remove('hidden'); 
                 document.getElementById('empName').innerText = currentRealName; 
                 
-                // 1. [ความเร็วสูงสุด] ดึงข้อมูลล่าสุดจาก Cache ในเครื่องมาใช้ก่อนทันที
-                let cachedInit = localStorage.getItem('kp_cached_init');
-                let cachedLogs = localStorage.getItem('kp_cached_logs');
-                
-                if (cachedInit) applyInitData(JSON.parse(cachedInit));
-                if (cachedLogs) currentLogs = JSON.parse(cachedLogs);
+                // 1. ล้างแคชเก่าออกทุกครั้งที่ login เพื่อให้ได้ข้อมูลล่าสุดเสมอ
+                localStorage.removeItem('kp_cached_init');
+                localStorage.removeItem('kp_cached_logs');
+                currentLogs = [];
 
                 startCamera();
                 refreshGPS();
@@ -811,6 +957,7 @@
                         if(initData.logs) {
                             localStorage.setItem('kp_cached_logs', JSON.stringify(initData.logs));
                             currentLogs = initData.logs;
+                            renderMyLogList();
                         }
                     }
                     if (myLat !== 0) {
@@ -819,6 +966,7 @@
                         updateCheckInButtons();
                     }
                 }).catch(err => console.error("Background load error:", err));
+
             } else {
                 // ฝั่ง HR Admin / Supervisor
                 document.getElementById('hrSec').classList.remove('hidden'); 
@@ -1226,18 +1374,7 @@
         switchEmpTab('history');
     }
 
-    function openImageModal(url) {
-        if (!url) return;
-        let imgPreview = document.getElementById('modalImagePreview');
-        if (imgPreview) imgPreview.src = url;
-        let imgModal = document.getElementById('imageModal');
-        if (imgModal) imgModal.classList.remove('hidden');
-    }
 
-    function closeImageModal() {
-        let imgModal = document.getElementById('imageModal');
-        if (imgModal) imgModal.classList.add('hidden');
-    }
 
     function submitRequest(type) {
         document.getElementById('reqMsg').innerText = "กำลังส่ง..."; let fileInput = type === 'time' ? document.getElementById('timeFile') : document.getElementById('leaveFile');
@@ -1268,7 +1405,7 @@
                 let statusText = i[8] === 'Approved' ? 'อนุมัติแล้ว' : (i[8] === 'Rejected' ? 'ไม่อนุมัติ' : 'รอตรวจสอบ'); 
                 
                 let reason = i[6] ? i[6] : '-';
-                let imgUrl = (i[7] && i[7].startsWith('http')) ? i[7] : ((i[6] && i[6].startsWith('http')) ? i[6] : null);
+                let imgUrl = isValidImageUrl(i[7]) ? i[7] : (isValidImageUrl(i[6]) ? i[6] : null);
                 if(imgUrl === i[6]) reason = i[5] ? i[5] : '-';
                 let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
@@ -1286,7 +1423,7 @@
                 let statusText = i[10] === 'Approved' ? 'อนุมัติแล้ว' : (i[10] === 'Rejected' ? 'ไม่อนุมัติ' : 'รอตรวจสอบ'); 
                 
                 let reason = i[7] ? i[7] : '-';
-                let imgUrl = (i[8] && i[8].startsWith('http')) ? i[8] : ((i[9] && i[9].startsWith('http')) ? i[9] : null);
+                let imgUrl = isValidImageUrl(i[8]) ? i[8] : (isValidImageUrl(i[9]) ? i[9] : null);
                 let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
                 tb.innerHTML += `<tr>
@@ -1378,20 +1515,34 @@
             let loc = log[6] || '-';
             let imgUrl = log[7];
             
-            let statusColor = status.includes('เข้า') ? 'var(--success)' : (status.includes('ลา') ? 'var(--warning)' : 'var(--danger)');
-            
-            let imgHtml = '-';
-            if (imgUrl && imgUrl.startsWith('http')) {
-                imgHtml = `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</button>`;
-            }
-
             let datePart = datetime.split(' ')[0] || '-';
             let timePart = datetime.split(' ')[1] || '-';
+
+            let isLate = false;
+            if (status.includes('เข้างาน') && !status.includes('ลืมเช็คอิน') && !status.includes('OT')) {
+                let checkInMin = parseTimeToMinutes(timePart);
+                let startMin = parseTimeToMinutes(workConfig.start);
+                if (checkInMin > startMin) {
+                    isLate = true;
+                }
+            }
+
+            let displayStatus = status;
+            if (isLate && status === 'เข้างาน') {
+                displayStatus = 'เข้างาน (สาย)';
+            }
+
+            let statusColor = isLate ? 'var(--warning)' : (status.includes('เข้า') ? 'var(--success)' : (status.includes('ลา') ? 'var(--purple)' : 'var(--danger)'));
+            
+            let imgHtml = '-';
+            if (isValidImageUrl(imgUrl)) {
+                imgHtml = `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</button>`;
+            }
 
             tb.innerHTML += `
                 <tr>
                     <td style="font-size:12px;"><b>${datePart}</b><br><span style="color:var(--gray);">${timePart}</span></td>
-                    <td style="color:${statusColor}; font-weight:600; font-size:13px;">${status}</td>
+                    <td style="color:${statusColor}; font-weight:600; font-size:13px;">${displayStatus}</td>
                     <td style="font-size:12px;">${loc}</td>
                     <td>${imgHtml}</td>
                 </tr>
@@ -1477,7 +1628,7 @@
 
         logsToShow.forEach(i => { 
             let c = i[2].includes('เข้า') ? 'var(--success)' : (i[2].includes('ลา') ? 'var(--warning)' : 'var(--danger)'); 
-            let imgLink = i[7] && i[7].startsWith('http') ? `<button onclick="openImageModal('${i[7]}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:2px 8px; border-radius:4px; font-size:11px; color:var(--dark);">🖼️ ดูรูป</button>` : '-'; 
+            let imgLink = isValidImageUrl(i[7]) ? `<button onclick="openImageModal('${i[7]}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:2px 8px; border-radius:4px; font-size:11px; color:var(--dark);">🖼️ ดูรูป</button>` : '-'; 
             tb.innerHTML += `<tr><td>${i[0]}</td><td style="font-weight:500;">${i[1]}</td><td style="color:${c}; font-weight:600;">${i[2]}</td><td>${i[6]||'-'}</td><td>${imgLink}</td></tr>`; 
         });
 
@@ -1547,13 +1698,17 @@
                 if(l[2].includes('เข้างาน') || l[2].includes('ออกงาน')) { 
                     hasCheckIn = true; 
                     
+                    let logTimeStr = l[0] ? l[0].split(' ')[1] : '';
+                    let checkInMin = parseTimeToMinutes(logTimeStr);
+                    let startMin = parseTimeToMinutes(workConfig.start);
+
                     if (l[2].includes('ลืมเช็คอิน')) { 
                         if (!checkInTagsHTML.includes('ปกติ(ลืม)')) checkInTagsHTML += `<div class="cal-tag bg-green">ปกติ(ลืม)</div>`;
                     } 
                     else if (l[2].includes('OT')) {
                         if (!checkInTagsHTML.includes('>OT<')) checkInTagsHTML += `<div class="cal-tag" style="background-color: #3b82f6;">OT</div>`;
                     }
-                    else if(l[2].includes('เข้างาน') && l[0].split(' ')[1] > workConfig.start + ":00") { 
+                    else if(l[2].includes('เข้างาน') && checkInMin > startMin) { 
                         if (!checkInTagsHTML.includes('สาย')) checkInTagsHTML += `<div class="cal-tag bg-orange">สาย</div>`; 
                         isLateForDay = true;
                     } 
@@ -1653,21 +1808,35 @@
             let loc = log[6] || '-';
             let imgUrl = log[7];
             
-            let statusColor = status.includes('เข้า') ? 'var(--success)' : (status.includes('ลา') ? 'var(--warning)' : 'var(--danger)');
-
-            let imgHtml = '-';
-            if (imgUrl && imgUrl.startsWith('http')) {
-                imgHtml = `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</button>`;
-            }
-
             let datePart = datetime.split(' ')[0] || '-';
             let timePart = datetime.split(' ')[1] || '-';
+
+            let isLate = false;
+            if (status.includes('เข้างาน') && !status.includes('ลืมเช็คอิน') && !status.includes('OT')) {
+                let checkInMin = parseTimeToMinutes(timePart);
+                let startMin = parseTimeToMinutes(workConfig.start);
+                if (checkInMin > startMin) {
+                    isLate = true;
+                }
+            }
+
+            let displayStatus = status;
+            if (isLate && status === 'เข้างาน') {
+                displayStatus = 'เข้างาน (สาย)';
+            }
+
+            let statusColor = isLate ? 'var(--warning)' : (status.includes('เข้า') ? 'var(--success)' : (status.includes('ลา') ? 'var(--purple)' : 'var(--danger)'));
+
+            let imgHtml = '-';
+            if (isValidImageUrl(imgUrl)) {
+                imgHtml = `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</button>`;
+            }
 
             tb.innerHTML += `
                 <tr>
                     <td style="font-size:12px;"><b>${datePart}</b><br><span style="color:var(--gray);">${timePart}</span></td>
                     <td style="font-size:13px; font-weight:500; color:var(--primary);">${empName}</td>
-                    <td style="color:${statusColor}; font-weight:600; font-size:13px;">${status}</td>
+                    <td style="color:${statusColor}; font-weight:600; font-size:13px;">${displayStatus}</td>
                     <td style="font-size:12px;">${loc}</td>
                     <td>${imgHtml}</td>
                 </tr>
@@ -1824,8 +1993,20 @@
 
         let imgContainer = document.getElementById('reqModalImageContainer');
         let imgPreview = document.getElementById('reqModalImgPreview');
-        if (imgUrl && imgUrl.startsWith('http')) {
-            imgPreview.src = imgUrl;
+        if (isValidImageUrl(imgUrl)) {
+            let fullUrl = getFullImageUrl(imgUrl);
+            let driveId = getDriveFileId(fullUrl);
+            if (driveId) {
+                imgPreview.src = `https://lh3.googleusercontent.com/d/${driveId}`;
+            } else {
+                fetch(fullUrl, {
+                    headers: { 'ngrok-skip-browser-warning': 'true', 'bypass-tunnel-reminder': 'true' }
+                })
+                .then(res => res.ok ? res.blob() : Promise.reject(res.status))
+                .then(blob => { imgPreview.src = URL.createObjectURL(blob); })
+                .catch(() => { imgPreview.src = fullUrl; });
+            }
+            imgPreview.onclick = function() { openImageModal(imgUrl); };
             imgContainer.classList.remove('hidden');
         } else {
             imgPreview.src = '';
@@ -1986,16 +2167,33 @@
         .then(r=>r.json())
         .then(d => { 
             let tb = document.getElementById('tb-locations'); 
-            tb.innerHTML = ''; 
             allLocations = d.data || [];
-            d.data.forEach(loc => { 
-                tb.innerHTML += `<tr><td><b>${loc.name}</b></td><td>${loc.radius}</td><td><button class="btn-yellow" onclick="openEditLoc('${loc.name}', '${loc.lat}', '${loc.lon}', '${loc.radius}')" style="padding:4px 8px; font-size:11px;">แก้ไข</button> <button class="btn-outline" onclick="deleteLocation('${loc.name}')" style="padding:4px 8px; font-size:11px;">ลบ</button></td></tr>`; 
-            }); 
-            if(d.data.length > 0) {
-                let activeLat = parseFloat(document.getElementById('setLat').value) || parseFloat(d.data[0].lat);
-                let activeLon = parseFloat(document.getElementById('setLon').value) || parseFloat(d.data[0].lon);
-                let activeRad = parseFloat(document.getElementById('setRad').value) || parseFloat(d.data[0].radius);
+            if(tb) {
+                tb.innerHTML = ''; 
+                if (allLocations.length === 0) {
+                    tb.innerHTML = '<tr><td colspan="4" class="text-center" style="color:var(--gray);">ยังไม่มีการตั้งค่าจุดเช็คอิน</td></tr>';
+                } else {
+                    allLocations.forEach((loc, idx) => { 
+                        tb.innerHTML += `<tr>
+                            <td style="font-size:13px;"><b>📍 ${loc.name}</b></td>
+                            <td style="font-size:12px; color:var(--gray);">${parseFloat(loc.lat).toFixed(6)}, ${parseFloat(loc.lon).toFixed(6)}</td>
+                            <td style="font-size:13px; font-weight:600; color:var(--primary);">${loc.radius} ม.</td>
+                            <td>
+                                <button class="btn-yellow" onclick="openEditLocByIndex(${idx})" style="padding:4px 8px; font-size:11px;">✏️ แก้ไข</button> 
+                                <button class="btn-outline" onclick="deleteLocationByIndex(${idx})" style="padding:4px 8px; font-size:11px; color:var(--danger); border-color:var(--danger);">🗑️ ลบ</button>
+                            </td>
+                        </tr>`; 
+                    }); 
+                }
+            }
+
+            if(allLocations.length > 0) {
+                let activeLat = parseFloat(document.getElementById('setLat').value) || parseFloat(allLocations[0].lat);
+                let activeLon = parseFloat(document.getElementById('setLon').value) || parseFloat(allLocations[0].lon);
+                let activeRad = parseFloat(document.getElementById('setRad').value) || parseFloat(allLocations[0].radius);
                 renderHrMap(activeLat, activeLon, activeRad); 
+            } else {
+                renderHrMap(13.971397, 100.791001, 100);
             }
         }); 
     }
@@ -2010,26 +2208,61 @@
         
         let actionData = oldN ? {action: 'edit_location', old_name: oldN, new_name: n, lat: lt, lon: ln, radius: r} : {action: 'add_location', name: n, lat: lt, lon: ln, radius: r}; 
         
-        document.getElementById('btnSaveLoc').innerText = "กำลังบันทึก..."; 
-        fetch(scriptURL, { method: 'POST', body: new URLSearchParams(actionData) }).then(() => { 
-            cancelEditLoc(); 
-            loadLocations(); 
-        }); 
+        let btnSave = document.getElementById('btnSaveLoc');
+        if (btnSave) {
+            btnSave.innerText = "กำลังบันทึก...";
+            btnSave.disabled = true;
+        }
+
+        fetch(scriptURL, { method: 'POST', body: new URLSearchParams(actionData) })
+        .then(r => r.json())
+        .then(res => {
+            if (btnSave) btnSave.disabled = false;
+            if (res.status === 'success') {
+                alert(oldN ? "แก้ไขสถานที่เรียบร้อยแล้ว!" : "เพิ่มสถานที่ใหม่เรียบร้อยแล้ว!");
+                cancelEditLoc(); 
+                loadLocations(); 
+            } else {
+                alert("เกิดข้อผิดพลาด: " + (res.message || "ไม่สามารถบันทึกได้"));
+                if (btnSave) btnSave.innerText = oldN ? "💾 บันทึกการแก้ไข" : "💾 บันทึกสถานที่";
+            }
+        })
+        .catch(err => {
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.innerText = oldN ? "💾 บันทึกการแก้ไข" : "💾 บันทึกสถานที่";
+            }
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+        });
     }
     
-    function openEditLoc(name, lat, lon, radius) { 
+    function openEditLocByIndex(idx) { 
+        let loc = allLocations[idx];
+        if (!loc) return;
+
         let titleEl = document.getElementById('locFormTitle');
-        if (titleEl) titleEl.innerText = "✏️ แก้ไขสถานที่: " + name; 
+        if (titleEl) titleEl.innerText = "✏️ แก้ไขสถานที่: " + loc.name; 
         
-        document.getElementById('editOldLocName').value = name; 
-        document.getElementById('setLocName').value = name; 
-        document.getElementById('setLat').value = lat; 
-        document.getElementById('setLon').value = lon; 
-        document.getElementById('setRad').value = radius; 
-        document.getElementById('btnSaveLoc').innerText = "💾 บันทึกการแก้ไข"; 
-        document.getElementById('btnCancelLoc').classList.remove('hidden'); 
-        renderHrMap(parseFloat(lat), parseFloat(lon), parseFloat(radius)); 
-        window.scrollTo(0, document.getElementById('tab-settings').offsetTop); 
+        document.getElementById('editOldLocName').value = loc.name; 
+        document.getElementById('setLocName').value = loc.name; 
+        document.getElementById('setLat').value = loc.lat; 
+        document.getElementById('setLon').value = loc.lon; 
+        document.getElementById('setRad').value = loc.radius; 
+        
+        let btnSave = document.getElementById('btnSaveLoc');
+        if (btnSave) btnSave.innerText = "💾 บันทึกการแก้ไข"; 
+        
+        let btnCancel = document.getElementById('btnCancelLoc');
+        if (btnCancel) btnCancel.classList.remove('hidden'); 
+        
+        renderHrMap(parseFloat(loc.lat), parseFloat(loc.lon), parseFloat(loc.radius)); 
+        let tabSettings = document.getElementById('tab-settings');
+        if (tabSettings) window.scrollTo({ top: tabSettings.offsetTop, behavior: 'smooth' }); 
+    }
+
+    function openEditLoc(name, lat, lon, radius) {
+        let idx = allLocations.findIndex(l => l.name === name);
+        if (idx !== -1) openEditLocByIndex(idx);
     }
     
     function cancelEditLoc() { 
@@ -2041,11 +2274,35 @@
         document.getElementById('setLat').value = ''; 
         document.getElementById('setLon').value = ''; 
         document.getElementById('setRad').value = ''; 
-        document.getElementById('btnSaveLoc').innerText = "💾 บันทึกสถานที่"; 
-        document.getElementById('btnCancelLoc').classList.add('hidden'); 
+        
+        let btnSave = document.getElementById('btnSaveLoc');
+        if (btnSave) btnSave.innerText = "💾 บันทึกสถานที่"; 
+        
+        let btnCancel = document.getElementById('btnCancelLoc');
+        if (btnCancel) btnCancel.classList.add('hidden'); 
     }
     
-    function deleteLocation(name) { if(!confirm("ลบสถานที่?")) return; fetch(scriptURL, { method: 'POST', body: new URLSearchParams({action: 'delete_location', name: name}) }).then(() => loadLocations()); }
+    function deleteLocationByIndex(idx) { 
+        let loc = allLocations[idx];
+        if (!loc) return;
+        if(!confirm(`ต้องการลบสถานที่ "${loc.name}" ใช่หรือไม่?`)) return; 
+        fetch(scriptURL, { method: 'POST', body: new URLSearchParams({action: 'delete_location', name: loc.name}) })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+                alert("ลบสถานที่เรียบร้อยแล้ว");
+                loadLocations();
+            } else {
+                alert("เกิดข้อผิดพลาดในการลบ: " + (res.message || ""));
+            }
+        })
+        .catch(err => alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์"));
+    }
+
+    function deleteLocation(name) {
+        let idx = allLocations.findIndex(l => l.name === name);
+        if (idx !== -1) deleteLocationByIndex(idx);
+    }
     
     let hrStaticLocGroup = null;
 

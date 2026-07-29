@@ -120,6 +120,22 @@
 </div>
 <style> @keyframes scaleUp { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } } </style>
 
+<!-- ================= Modal ป๊อปอัพแสดงรูปภาพแบบไม่ต้องเปิดหน้าใหม่ ================= -->
+<div id="imageModal" class="hidden" onclick="if(event.target === this) closeImageModal();" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 30000; display: flex; align-items: center; justify-content: center; padding: 16px;">
+    <div style="background: #ffffff; border-radius: 20px; max-width: 520px; width: 100%; padding: 20px; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.9); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px;">
+            <h3 style="margin: 0; font-size: 16px; color: var(--dark); font-weight: 700;">🖼️ รูปภาพแนบ / รูปถ่ายเช็คอิน</h3>
+            <button onclick="closeImageModal()" style="background: #f1f5f9; color: #64748b; border-radius: 50%; width: 32px; height: 32px; padding: 0; font-size: 16px; margin: 0; line-height: 32px; box-shadow: none; border: none; cursor: pointer;">✕</button>
+        </div>
+        <div style="text-align: center; background: #0f172a; border-radius: 12px; overflow: hidden; padding: 8px; max-height: 70vh; display: flex; align-items: center; justify-content: center;">
+            <img id="modalImagePreview" src="" alt="รูปภาพตัวอย่าง" style="max-width: 100%; max-height: 65vh; object-fit: contain; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+        </div>
+        <div style="margin-top: 15px; text-align: center;">
+            <button class="btn-grey" onclick="closeImageModal()" style="width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px;">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+</div>
+
 <div id="loadingOverlay" class="hidden">
     <div class="loader"></div>
     <h3 style="color: var(--primary); margin:0;">กำลังโหลดข้อมูล...</h3>
@@ -177,9 +193,14 @@
 
             <button class="btn-grey" onclick="refreshGPS()" style="width: 100%; margin: 5px 0 15px 0; padding: 8px; font-size: 13px;">🔄 อัปเดตตำแหน่งล่าสุด</button>
             
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                <div id="map-employee" class="hidden" style="margin:0; height: 140px; border-radius: 8px;"></div>
-                <div class="camera-box hidden" id="cameraDiv" style="margin:0; padding:0; height: 140px; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 8px 0;">
+                <span style="font-size: 14px; font-weight: 600; color: var(--dark);">📍 แผนที่พิกัดลงเวลา</span>
+                <button id="btnExpandMap" onclick="toggleExpandMap()" style="background: #e2e8f0; color: #334155; padding: 5px 12px; font-size: 12px; border-radius: 6px; margin: 0; box-shadow: none;">🔍 ขยายแผนที่</button>
+            </div>
+            
+            <div id="mapContainerWrap" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; transition: all 0.3s ease;">
+                <div id="map-employee" class="hidden" style="margin:0; height: 200px; border-radius: 8px; transition: height 0.3s ease;"></div>
+                <div class="camera-box hidden" id="cameraDiv" style="margin:0; padding:0; height: 200px; border-radius: 8px;">
                     <video id="videoElement" autoplay playsinline></video>
                     <canvas id="canvasElement"></canvas>
                 </div>
@@ -854,14 +875,59 @@
         }
     }
 
+    function toggleExpandMap() {
+        let mapEl = document.getElementById('map-employee');
+        let btnEl = document.getElementById('btnExpandMap');
+        let wrapEl = document.getElementById('mapContainerWrap');
+        
+        if (mapEl.classList.contains('expanded-map')) {
+            mapEl.classList.remove('expanded-map');
+            mapEl.style.height = '200px';
+            if (wrapEl) wrapEl.style.gridTemplateColumns = '1fr 1fr';
+            if (btnEl) btnEl.innerText = '🔍 ขยายแผนที่';
+        } else {
+            mapEl.classList.add('expanded-map');
+            mapEl.style.height = '420px';
+            if (wrapEl) wrapEl.style.gridTemplateColumns = '1fr';
+            if (btnEl) btnEl.innerText = '📐 ย่อแผนที่';
+        }
+        setTimeout(() => { if (empMapObj) empMapObj.invalidateSize(); }, 250);
+    }
+
     function renderEmpMap() {
         document.getElementById('map-employee').classList.remove('hidden');
-        if(!empMapObj) { empMapObj = L.map('map-employee').setView([myLat, myLon], 15); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(empMapObj); } else { empMapObj.setView([myLat, myLon], 15); }
-        empMapObj.eachLayer((layer) => { if (layer instanceof L.Marker || layer instanceof L.Circle) { empMapObj.removeLayer(layer); } });
-        let mapBounds = [[myLat, myLon]];
-        allLocations.forEach(loc => { L.circle([parseFloat(loc.lat), parseFloat(loc.lon)], { color: '#10b981', fillColor: '#10b981', fillOpacity: 0.2, radius: parseFloat(loc.radius) }).addTo(empMapObj).bindPopup(loc.name); mapBounds.push([parseFloat(loc.lat), parseFloat(loc.lon)]); });
-        L.marker([myLat, myLon], {icon: L.divIcon({ className: 'custom-div-icon', html: "<div style='background-color:var(--danger); width:16px; height:16px; border-radius:50%; border:3px solid white; box-shadow:0 2px 4px rgba(0,0,0,0.3);'></div>" })}).addTo(empMapObj).bindPopup("ตำแหน่งคุณ").openPopup();
-        if(mapBounds.length > 1) { empMapObj.fitBounds(L.latLngBounds(mapBounds), {padding: [30, 30]}); }
+        const zoomLevel = 17.5;
+        if(!empMapObj) { 
+            empMapObj = L.map('map-employee').setView([myLat, myLon], zoomLevel); 
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(empMapObj); 
+        } else { 
+            empMapObj.setView([myLat, myLon], zoomLevel); 
+        }
+
+        empMapObj.eachLayer((layer) => { 
+            if (layer instanceof L.Marker || layer instanceof L.Circle) { 
+                empMapObj.removeLayer(layer); 
+            } 
+        });
+
+        allLocations.forEach(loc => { 
+            L.circle([parseFloat(loc.lat), parseFloat(loc.lon)], { 
+                color: '#10b981', 
+                fillColor: '#10b981', 
+                fillOpacity: 0.28, 
+                weight: 2,
+                radius: parseFloat(loc.radius) 
+            }).addTo(empMapObj).bindPopup(`<b>${loc.name}</b><br>รัศมีอนุญาต: ${loc.radius} เมตร`); 
+        });
+
+        L.marker([myLat, myLon], {
+            icon: L.divIcon({ 
+                className: 'custom-div-icon', 
+                html: "<div style='background-color:#ef4444; width:18px; height:18px; border-radius:50%; border:3px solid #ffffff; box-shadow:0 0 10px rgba(239,68,68,0.8);'></div>" 
+            })
+        }).addTo(empMapObj).bindPopup("📍 ตำแหน่งปัจจุบันของคุณ").openPopup();
+
+        empMapObj.setView([myLat, myLon], zoomLevel);
     }
 
     function calculateDistance(lat1, lon1, lat2, lon2) { var p = 0.017453292519943295; var a = 0.5 - Math.cos((lat2 - lat1) * p)/2 + Math.cos(lat1 * p) * Math.cos(lat2 * p) * (1 - Math.cos((lon2 - lon1) * p))/2; return 12742000 * Math.asin(Math.sqrt(a)); }
@@ -940,6 +1006,19 @@
         document.getElementById('successOverlay').classList.add('hidden');
     }
 
+    function openImageModal(url) {
+        if (!url) return;
+        let imgPreview = document.getElementById('modalImagePreview');
+        if (imgPreview) imgPreview.src = url;
+        let imgModal = document.getElementById('imageModal');
+        if (imgModal) imgModal.classList.remove('hidden');
+    }
+
+    function closeImageModal() {
+        let imgModal = document.getElementById('imageModal');
+        if (imgModal) imgModal.classList.add('hidden');
+    }
+
     function submitRequest(type) {
         document.getElementById('reqMsg').innerText = "กำลังส่ง..."; let fileInput = type === 'time' ? document.getElementById('timeFile') : document.getElementById('leaveFile');
         let params = { action: 'submit_request', req_type: type, username: currentRealName };
@@ -971,7 +1050,7 @@
                 let reason = i[6] ? i[6] : '-';
                 let imgUrl = (i[7] && i[7].startsWith('http')) ? i[7] : ((i[6] && i[6].startsWith('http')) ? i[6] : null);
                 if(imgUrl === i[6]) reason = i[5] ? i[5] : '-';
-                let imgHtml = imgUrl ? `<a href="${imgUrl}" target="_blank" style="text-decoration:none; background:#eef2f6; border:1px solid #d1d5db; padding:2px 6px; border-radius:4px; font-size:10px; color:var(--dark); display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</a>` : '';
+                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
                 tb.innerHTML += `<tr>
                     <td><b>แก้ไขเวลา</b><br><span style="font-size:11px; color:var(--gray);">${i[3]}</span></td>
@@ -988,7 +1067,7 @@
                 
                 let reason = i[7] ? i[7] : '-';
                 let imgUrl = (i[8] && i[8].startsWith('http')) ? i[8] : ((i[9] && i[9].startsWith('http')) ? i[9] : null);
-                let imgHtml = imgUrl ? `<a href="${imgUrl}" target="_blank" style="text-decoration:none; background:#eef2f6; border:1px solid #d1d5db; padding:2px 6px; border-radius:4px; font-size:10px; color:var(--dark); display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</a>` : '';
+                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
                 tb.innerHTML += `<tr>
                     <td><b>ลางาน</b><br><span style="font-size:11px; color:var(--gray);">${i[3]}</span></td>
@@ -1083,7 +1162,7 @@
             
             let imgHtml = '-';
             if (imgUrl && imgUrl.startsWith('http')) {
-                imgHtml = `<a href="${imgUrl}" target="_blank" style="text-decoration:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</a>`;
+                imgHtml = `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</button>`;
             }
 
             let datePart = datetime.split(' ')[0] || '-';
@@ -1178,7 +1257,7 @@
 
         logsToShow.forEach(i => { 
             let c = i[2].includes('เข้า') ? 'var(--success)' : (i[2].includes('ลา') ? 'var(--warning)' : 'var(--danger)'); 
-            let imgLink = i[7] && i[7].startsWith('http') ? `<a href="${i[7]}" target="_blank" style="text-decoration:none;">🖼️</a>` : '-'; 
+            let imgLink = i[7] && i[7].startsWith('http') ? `<button onclick="openImageModal('${i[7]}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:2px 8px; border-radius:4px; font-size:11px; color:var(--dark);">🖼️ ดูรูป</button>` : '-'; 
             tb.innerHTML += `<tr><td>${i[0]}</td><td style="font-weight:500;">${i[1]}</td><td style="color:${c}; font-weight:600;">${i[2]}</td><td>${i[6]||'-'}</td><td>${imgLink}</td></tr>`; 
         });
 
@@ -1358,7 +1437,7 @@
 
             let imgHtml = '-';
             if (imgUrl && imgUrl.startsWith('http')) {
-                imgHtml = `<a href="${imgUrl}" target="_blank" style="text-decoration:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</a>`;
+                imgHtml = `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:4px 10px; border-radius:6px; font-size:11px; color:var(--dark); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.05);">🖼️ ดูรูป</button>`;
             }
 
             let datePart = datetime.split(' ')[0] || '-';
@@ -1416,7 +1495,7 @@
                 let reason = i[6] ? i[6] : '-';
                 let imgUrl = (i[7] && i[7].startsWith('http')) ? i[7] : ((i[6] && i[6].startsWith('http')) ? i[6] : null);
                 if(imgUrl === i[6]) reason = i[5] ? i[5] : '-';
-                let imgHtml = imgUrl ? `<a href="${imgUrl}" target="_blank" style="text-decoration:none; background:#eef2f6; border:1px solid #d1d5db; padding:2px 6px; border-radius:4px; font-size:10px; color:var(--dark); display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</a>` : '';
+                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
                 tbTime.innerHTML += `<tr>
                     <td><b style="color:var(--primary);">${i[2]}</b><br><span style="font-size:11px; color:var(--gray)">${i[1].split(' ')[0]}</span></td>
@@ -1449,7 +1528,7 @@
                 // ตรวจสอบและดึงข้อมูล "เหตุผล" และ "รูปภาพ"
                 let reason = i[7] ? i[7] : '-';
                 let imgUrl = (i[8] && i[8].startsWith('http')) ? i[8] : ((i[9] && i[9].startsWith('http')) ? i[9] : null);
-                let imgHtml = imgUrl ? `<a href="${imgUrl}" target="_blank" style="text-decoration:none; background:#eef2f6; border:1px solid #d1d5db; padding:2px 6px; border-radius:4px; font-size:10px; color:var(--dark); display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</a>` : '';
+                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
                 tbLeave.innerHTML += `<tr>
                     <td><b style="color:var(--primary);">${i[2]}</b><br><span style="font-size:11px; color:var(--gray)">${i[1].split(' ')[0]}</span></td>

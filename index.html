@@ -2556,8 +2556,23 @@
             let cacheKey = 'cached_anc_img_' + anc.id;
             let cachedData = localStorage.getItem(cacheKey);
 
+            // Clean up broken/invalid cache if not valid base64 image
+            if (cachedData && !cachedData.startsWith('data:image/')) {
+                try { localStorage.removeItem(cacheKey); } catch(e) {}
+                cachedData = null;
+            }
+
+            popImg.onerror = function() {
+                console.warn("popImg error, retrying with fullUrl:", fullUrl);
+                try { localStorage.removeItem(cacheKey); } catch(e) {}
+                if (popImg.src !== fullUrl) {
+                    popImg.src = fullUrl;
+                }
+            };
+
             if (cachedData) {
                 popImg.src = cachedData;
+                popImg.style.opacity = '1';
                 imgWrap.classList.remove('hidden');
             } else {
                 imgWrap.classList.remove('hidden');
@@ -2577,7 +2592,9 @@
                     let reader = new FileReader();
                     reader.onloadend = function() {
                         try {
-                            localStorage.setItem(cacheKey, reader.result);
+                            if (reader.result && reader.result.startsWith('data:image/')) {
+                                localStorage.setItem(cacheKey, reader.result);
+                            }
                         } catch(e) {}
                     };
                     reader.readAsDataURL(blob);

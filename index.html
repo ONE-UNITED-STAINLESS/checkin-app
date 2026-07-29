@@ -475,8 +475,26 @@
 </div>
 
 <script>
-    // ********* URL ของ Node.js Backend Server (Cloudflare Tunnel) *********
-    const scriptURL = 'https://prints-retrieval-url-axis.trycloudflare.com/api'; 
+    // ********* URL ของ Node.js Backend Server (สลับอัตโนมัติระหว่าง Local & Public Tunnel) *********
+    const localURL = 'http://localhost:3000/api';
+    const cloudflareURL = 'https://one-united-checkin-api.loca.lt/api';
+    const scriptURL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? localURL
+        : cloudflareURL;
+
+    // Fetch Interceptor for Localtunnel Bypass
+    const originalFetch = window.fetch;
+    window.fetch = function(url, options = {}) {
+        if (typeof url === 'string' && url.includes('loca.lt')) {
+            options.headers = options.headers || {};
+            if (options.headers instanceof Headers) {
+                options.headers.set('bypass-tunnel-reminder', 'true');
+            } else {
+                options.headers['bypass-tunnel-reminder'] = 'true';
+            }
+        }
+        return originalFetch(url, options);
+    };
     
     let currentUser = '', currentRole = '', currentRealName = '';
     let allLocations = [], allHolidays = [];

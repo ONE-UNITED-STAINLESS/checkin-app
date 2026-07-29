@@ -477,19 +477,21 @@
 <script>
     // ********* URL ของ Node.js Backend Server (สลับอัตโนมัติระหว่าง Local & Public Tunnel) *********
     const localURL = 'http://localhost:3000/api';
-    const cloudflareURL = 'https://infant-train-sullivan-adam.trycloudflare.com ';
+    const cloudflareURL = 'https://margarine-saved-encrypt.ngrok-free.dev/api';
     const scriptURL = (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
         ? localURL
         : cloudflareURL;
 
-    // Fetch Interceptor for Localtunnel Bypass
+    // Fetch Interceptor for Ngrok & Localtunnel Bypass
     const originalFetch = window.fetch;
     window.fetch = function(url, options = {}) {
-        if (typeof url === 'string' && url.includes('loca.lt')) {
+        if (typeof url === 'string' && (url.includes('ngrok') || url.includes('loca.lt'))) {
             options.headers = options.headers || {};
             if (options.headers instanceof Headers) {
+                options.headers.set('ngrok-skip-browser-warning', 'true');
                 options.headers.set('bypass-tunnel-reminder', 'true');
             } else {
+                options.headers['ngrok-skip-browser-warning'] = 'true';
                 options.headers['bypass-tunnel-reminder'] = 'true';
             }
         }

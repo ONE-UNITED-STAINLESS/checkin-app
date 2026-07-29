@@ -573,20 +573,24 @@
                 refreshGPS();
                 document.getElementById('gpsStatus').innerHTML = '<span style="color:var(--warning);">กำลังเปิดกล้อง และดึงพิกัด GPS...</span>';
                 
-                // 2. ดึงข้อมูลประวัติย้อนหลังทั้งหมดจาก GAS พร้อมกัน 2 เส้นทางเบื้องหลัง (ไม่ต้องรอคิว)
-                Promise.all([
-                    fetch(scriptURL, { method: 'POST', body: new URLSearchParams({action: 'init_app', role: currentRole}) }).then(r=>r.json()),
-                    fetch(scriptURL, { method: 'POST', body: new URLSearchParams({action: 'get_my_logs', username: currentRealName}) }).then(r=>r.json())
-                ]).then(([initData, logData]) => {
-                    // อัปเดตข้อมูล Cache ใหม่ล่าสุด
+                // 2. ดึงข้อมูลระบบและประวัติพร้อมกันใน 1 คำขอ (เพื่อความเร็วสูงสุด)
+                fetch(scriptURL, { method: 'POST', body: new URLSearchParams({action: 'init_app', role: currentRole, username: currentRealName}) })
+                .then(r => r.json())
+                .then(initData => {
                     if(initData.status === 'success') {
                         localStorage.setItem('kp_cached_init', JSON.stringify(initData));
                         applyInitData(initData);
+                        if(initData.logs) {
+                            localStorage.setItem('kp_cached_logs', JSON.stringify(initData.logs));
+                            currentLogs = initData.logs;
+                        }
                     }
-                    if(logData.data) {
-                        localStorage.setItem('kp_cached_logs', JSON.stringify(logData.data));
-                        currentLogs = logData.data;
+                    if (myLat !== 0) {
+                        checkPosition({ coords: { latitude: myLat, longitude: myLon } });
+                    } else {
+                        updateCheckInButtons();
                     }
+                }).catch(err => console.error("Background load error:", err));
                     
                     // อัปเดต UI ด้วยข้อมูลใหม่
                     if (myLat !== 0) {

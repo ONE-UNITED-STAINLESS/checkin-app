@@ -219,6 +219,53 @@
     </div>
 </div>
 
+<!-- ================= Modal ป๊อปอัพประวัติการอัปเดตระบบ (Changelog v2.5.0) ================= -->
+<div id="versionModal" class="hidden" onclick="if(event.target === this) closeVersionModal();" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 50000; display: flex; align-items: center; justify-content: center; padding: 16px;">
+    <div style="background: #ffffff; border-radius: 20px; max-width: 520px; width: 100%; padding: 24px; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.9); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 85vh; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #f1f5f9; padding-bottom: 10px; flex-shrink: 0;">
+            <div>
+                <h3 style="margin: 0; font-size: 18px; color: var(--dark); font-weight: 700;">🚀 ประวัติการอัปเดตระบบ (Changelog)</h3>
+                <span style="font-size: 12px; color: var(--primary); font-weight: 600;">ONE UNITED STAINLESS CO., LTD</span>
+            </div>
+            <button onclick="closeVersionModal()" style="background: #f1f5f9; color: #64748b; border-radius: 50%; width: 32px; height: 32px; padding: 0; font-size: 16px; margin: 0; line-height: 32px; box-shadow: none; border: none; cursor: pointer;">✕</button>
+        </div>
+        
+        <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px;">
+            <!-- Version 2.5.0 -->
+            <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 15px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-weight: 700; font-size: 15px; color: var(--success);">v2.5.0 (ล่าสุด)</span>
+                    <span style="font-size: 11px; background: var(--success); color: white; padding: 2px 8px; border-radius: 10px;">29 ก.ค. 2569</span>
+                </div>
+                <ul style="margin: 0; padding-left: 18px; font-size: 13px; color: #334155; line-height: 1.6;">
+                    <li><b>📢 ระบบข่าวสารและประกาศจาก HR:</b> HR สามารถพิมพ์ข้อความแนบรูปภาพประกาศแจ้งพนักงานในหน้าแรกได้</li>
+                    <li><b>⏰ สรุปสถิติ OT:</b> พนักงานและ HR ดูจำนวนครั้งและวันทำ OT สะสมประจำเดือนได้</li>
+                    <li><b>🖼️ ระบบพรีวิวรูปภาพ Dual-Preview:</b> รองรับพรีวิวรูปภาพทั้ง Google Drive และรูปในเครื่อง (/uploads/...)</li>
+                    <li><b>📅 ปรับแต่งแถบปฏิทิน:</b> แถบสลับเดือนปฏิทินแสดงผลแนวนอนพอดีหน้าจอทั้งคอมพิวเตอร์และมือถือ</li>
+                    <li><b>⏱️ คำนวณเข้าสายแม่นยำ:</b> คำนวณนาทีเข้างานเปรียบเทียบเวลาเริ่มงาน (08:30) พร้อมติดแท็กสายสีส้มอัตโนมัติ</li>
+                </ul>
+            </div>
+
+            <!-- Version 2.0.0 -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                    <span style="font-weight: 700; font-size: 14px; color: var(--dark);">v2.0.0</span>
+                    <span style="font-size: 11px; color: var(--gray);">20 ก.ค. 2569</span>
+                </div>
+                <ul style="margin: 0; padding-left: 18px; font-size: 12px; color: #475569; line-height: 1.5;">
+                    <li>ย้ายระบบฐานข้อมูลมาที่ MySQL / HeidiSQL รองรับข้อมูลพนักงาน ประวัติ และคำขอมากกว่า 1,000+ รายการ</li>
+                    <li>เพิ่มระบบตั้งค่าพิกัดจุดเช็กอิน Leaflet Map พร้อมคำนวณรัศมี GPS (เมตร)</li>
+                    <li>รองรับการส่งคำขอแก้ไขเวลาและลางานผ่านระบบเว็บแอป</li>
+                </ul>
+            </div>
+        </div>
+
+        <div style="margin-top: 15px; text-align: center; flex-shrink: 0;">
+            <button class="btn-grey" onclick="closeVersionModal()" style="width: 100%; padding: 10px; font-size: 14px; font-weight: 600; border-radius: 10px;">ปิดหน้าต่าง</button>
+        </div>
+    </div>
+</div>
+
 <!-- ================= Modal ป๊อปอัพพิจารณาคำขอ (สำหรับ HR / Admin) ================= -->
 <div id="requestDetailModal" class="hidden" onclick="if(event.target === this) closeRequestDetailModal();" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); z-index: 30000; display: flex; align-items: center; justify-content: center; padding: 16px;">
     <div style="background: #ffffff; border-radius: 20px; max-width: 540px; width: 100%; padding: 24px; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); border: 1px solid rgba(255,255,255,0.9); animation: scaleUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); max-height: 88vh; display: flex; flex-direction: column;">
@@ -337,7 +384,7 @@
         <div class="app-header">
             <div>
                 <h4 style="margin:0 0 5px 0; color:var(--gray); font-size:12px;">ONE UNITED STAINLESS CO., LTD</h4>
-                <h2>สวัสดีคุณ <span id="empName" class="text-primary"></span></h2>
+                <h2>สวัสดีคุณ <span id="empName" class="text-primary"></span> <span onclick="openVersionModal()" style="cursor:pointer; background:linear-gradient(135deg,#4361ee,#3b82f6); color:white; font-size:11px; padding:3px 8px; border-radius:12px; font-weight:700; margin-left:6px; display:inline-block; box-shadow:0 2px 4px rgba(67,97,238,0.3);" title="คลิกเพื่อดูประวัติการอัปเดตระบบ">v2.5.0 ✨ อัปเดต</span></h2>
             </div>
             <div style="text-align: right;">
                 <div id="headerClockEmp" class="header-clock">00:00:00</div>
@@ -353,6 +400,19 @@
         </div>
         
         <div id="emp-tab-checkin">
+            <!-- กล่องแสดงประกาศจาก HR สำหรับพนักงาน -->
+            <div id="empNoticeBox" class="hidden" style="margin-bottom: 15px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; border-radius: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                    <h3 style="margin: 0; font-size: 15px; color: #1e40af; font-weight: 700;">📢 ประกาศข่าวสารจาก HR / บริษัท</h3>
+                    <span id="empNoticeTime" style="font-size: 11px; color: #3b82f6; font-weight: 500;">-</span>
+                </div>
+                <h4 id="empNoticeTitle" style="margin: 0 0 6px 0; font-size: 16px; color: var(--dark); font-weight: 700;">-</h4>
+                <p id="empNoticeContent" style="margin: 0; font-size: 13px; color: #334155; line-height: 1.5; white-space: pre-wrap;">-</p>
+                <div id="empNoticeImgContainer" class="hidden" style="margin-top: 10px;">
+                    <button id="empNoticeImgBtn" onclick="" class="btn-primary" style="padding: 4px 12px; font-size: 11px; border-radius: 6px;">🖼️ ดูรูปภาพประกาศแนบ</button>
+                </div>
+            </div>
+
             <div class="digital-clock" id="mainClockEmp">00:00:00</div>
 
             <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
@@ -390,6 +450,7 @@
             <div class="grid-cards" style="margin-bottom: 15px;">
                 <div class="card" style="padding: 10px;"><h3 id="empSumPresent" style="font-size:24px; color:var(--success);">0</h3><p>มาทำงาน (วัน)</p></div>
                 <div class="card" style="padding: 10px;"><h3 id="empSumLate" style="font-size:24px; color:var(--warning);">0</h3><p>สาย (ครั้ง)</p></div>
+                <div class="card" style="padding: 10px;"><h3 id="empSumOt" style="font-size:24px; color:#3b82f6;">0</h3><p>ทำ OT (ครั้ง)</p></div>
                 <div class="card" style="padding: 10px;"><h3 id="empSumLeave" style="font-size:24px; color:var(--primary);">0</h3><p>ลา (วัน)</p></div>
                 <div class="card" style="padding: 10px;"><h3 id="empSumAbsent" style="font-size:24px; color:var(--danger);">0</h3><p>ขาดงาน (วัน)</p></div>
             </div>
@@ -495,7 +556,7 @@
         <div class="app-header">
             <div>
                 <h4 style="margin:0 0 5px 0; color:var(--gray); font-size:12px;">ONE UNITED STAINLESS CO., LTD</h4>
-                <h2>📊 <span id="roleTitle" class="text-primary">Dashboard</span></h2>
+                <h2>📊 <span id="roleTitle" class="text-primary">Dashboard</span> <span onclick="openVersionModal()" style="cursor:pointer; background:linear-gradient(135deg,#4361ee,#3b82f6); color:white; font-size:11px; padding:3px 8px; border-radius:12px; font-weight:700; margin-left:6px; display:inline-block; box-shadow:0 2px 4px rgba(67,97,238,0.3);" title="คลิกเพื่อดูประวัติการอัปเดตระบบ">v2.5.0 ✨ อัปเดต</span></h2>
             </div>
             <div style="text-align: right;">
                 <div id="headerClockAdmin" class="header-clock">00:00:00</div>
@@ -549,6 +610,7 @@
                 <div class="grid-cards" style="margin-bottom: 15px;">
                     <div class="card" style="padding: 10px;"><h3 id="hrSumPresent" style="font-size:24px; color:var(--success);">0</h3><p>มาทำงาน (วัน)</p></div>
                     <div class="card" style="padding: 10px;"><h3 id="hrSumLate" style="font-size:24px; color:var(--warning);">0</h3><p>สาย (ครั้ง)</p></div>
+                    <div class="card" style="padding: 10px;"><h3 id="hrSumOt" style="font-size:24px; color:#3b82f6;">0</h3><p>ทำ OT (ครั้ง)</p></div>
                     <div class="card" style="padding: 10px;"><h3 id="hrSumLeave" style="font-size:24px; color:var(--primary);">0</h3><p>ลา (วัน)</p></div>
                     <div class="card" style="padding: 10px;"><h3 id="hrSumAbsent" style="font-size:24px; color:var(--danger);">0</h3><p>ขาดงาน (วัน)</p></div>
                 </div>
@@ -715,6 +777,39 @@
                         </thead>
                         <tbody id="tb-locations">
                             <tr><td colspan="4" class="text-center" style="color:var(--gray);">กำลังโหลดพิกัดสถานที่...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ================= ส่วนจัดการประกาศข่าวสารจาก HR ================= -->
+            <hr style="margin:25px 0 20px 0; border:1px solid #e5e7eb;">
+            <h3 style="margin-top:0; font-size: 16px; color:var(--dark); font-weight:700;">📢 จัดการประกาศข่าวสารสำหรับพนักงาน</h3>
+            <div class="edit-box" style="margin-top:0; background:#f0f9ff; border-color:#bae6fd;">
+                <input type="text" id="ancTitle" placeholder="หัวข้อประกาศ (เช่น ประกาศวันหยุดเทศกาล / แจ้งกำหนดการ)" style="font-weight: 600;">
+                <textarea id="ancContent" rows="3" placeholder="ข้อความรายละเอียดประกาศ..." style="margin-top: 8px; font-family: inherit; font-size: 13px; padding: 10px; width: 100%; border: 1px solid #cbd5e1; border-radius: 8px;"></textarea>
+                <div style="margin-top: 8px;">
+                    <label style="font-size: 12px; color: var(--gray); font-weight: 500;">แนบรูปภาพประกาศ (ตัวเลือก):</label>
+                    <input type="file" id="ancFile" accept="image/*" style="padding: 8px; background: white; margin-top: 4px;">
+                </div>
+                <button class="btn-primary" onclick="postAnnouncement()" style="width: 100%; margin-top: 12px;">📢 โพสต์ประกาศข่าวสาร</button>
+                <p id="ancMsg" style="margin: 8px 0 0 0; font-size: 13px; font-weight: 600; color: var(--success); text-align: center;"></p>
+            </div>
+
+            <div style="margin-top: 15px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 15px; color: var(--dark); font-weight: 700;">📋 รายการประกาศข่าวสารย้อนหลัง</h4>
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>วันที่โพสต์</th>
+                                <th>หัวข้อ / รายละเอียด</th>
+                                <th>รูปแนบ</th>
+                                <th>จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tb-announcements-hr">
+                            <tr><td colspan="4" class="text-center" style="color:var(--gray);">กำลังโหลดประกาศ...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -920,6 +1015,11 @@
         document.querySelectorAll('.legend-late').forEach(el => el.innerText = `เข้าสาย (>${formatTimeValue(workConfig.start)})`);
         allHolidays = d.holidays || [];
         allLocations = d.locations || [];
+        if (d.announcements && Array.isArray(d.announcements)) {
+            allAnnouncements = d.announcements;
+            renderHrAnnouncementsTable(d.announcements);
+            renderEmpAnnouncements(d.announcements);
+        }
     }
 
     // ✅ อัปเดตระบบโหลด: โหลดจาก Cache ทันที + ดึงข้อมูลใหม่คู่ขนานกัน (พื้นหลัง)
@@ -1681,13 +1781,13 @@
         let today = new Date(); today.setHours(0,0,0,0);
         
         // ตัวแปรเก็บสถิติ
-        let presentCount = 0, lateCount = 0, leaveCount = 0, absentCount = 0;
+        let presentCount = 0, lateCount = 0, leaveCount = 0, absentCount = 0, otCount = 0;
 
         for(let d=1; d<=daysInMonth; d++) {
             let loopDate = new Date(year, month, d); let dateStr = `${String(d).padStart(2,'0')}/${String(month+1).padStart(2,'0')}/${year}`;
             let dayLogs = logs.filter(l => l[0] && l[0].split(' ')[0] === dateStr);
             
-            let hasCheckIn = false, hasLeave = false, leaveLabel = 'ลางาน', isLateForDay = false; 
+            let hasCheckIn = false, hasLeave = false, leaveLabel = 'ลางาน', isLateForDay = false, isOtForDay = false; 
             let isHoliday = allHolidays.find(h => h.date === dateStr); let isWeekend = (loopDate.getDay() === 0);
             let checkInTagsHTML = ''; 
             
@@ -1695,6 +1795,7 @@
 
             sortedDayLogs.forEach(l => { 
                 if(l[2].includes('ลา')) { hasLeave = true; leaveLabel = l[2]; } 
+                if(l[2].includes('OT')) { isOtForDay = true; }
                 if(l[2].includes('เข้างาน') || l[2].includes('ออกงาน')) { 
                     hasCheckIn = true; 
                     
@@ -1736,6 +1837,7 @@
                 tags += `<div class="cal-tag bg-red">ขาดงาน</div>`; 
                 absentCount++; 
             }
+            if(isOtForDay) otCount++;
             
             let clickAttr = isHrView ? `onclick="filterHrLogByDate('${dateStr}')" class="cal-day hr-clickable" title="คลิกเพื่อดูประวัติของวันที่ ${dateStr}"` : `onclick="filterEmpLogByDate('${dateStr}')" class="cal-day hr-clickable" title="คลิกเพื่อดูประวัติของวันที่ ${dateStr}"`;
             html += `<div ${clickAttr}><div class="cal-date">${d}</div>${tags}</div>`;
@@ -1749,6 +1851,9 @@
             document.getElementById(statPrefix + 'Late').innerText = lateCount;
             document.getElementById(statPrefix + 'Leave').innerText = leaveCount;
             document.getElementById(statPrefix + 'Absent').innerText = absentCount;
+            if (document.getElementById(statPrefix + 'Ot')) {
+                document.getElementById(statPrefix + 'Ot').innerText = otCount;
+            }
         }
         
         // แสดงกล่องสถิติของ HR เมื่อมีการเลือกพนักงานแล้ว
@@ -2341,6 +2446,143 @@
         setTimeout(() => { hrMapObj.invalidateSize(); }, 200); 
     }
     function updateHrCircleRadius() { let newRad = parseFloat(document.getElementById('setRad').value) || 0; if(hrCircle) hrCircle.setRadius(newRad); }
+
+    // =========================================================
+    // 13. VERSION MODAL & CHANGELOG (v2.5.0)
+    // =========================================================
+    function openVersionModal() {
+        let el = document.getElementById('versionModal');
+        if (el) el.classList.remove('hidden');
+    }
+    function closeVersionModal() {
+        let el = document.getElementById('versionModal');
+        if (el) el.classList.add('hidden');
+    }
+
+    // =========================================================
+    // 14. ANNOUNCEMENTS (HR Notices)
+    // =========================================================
+    let allAnnouncements = [];
+
+    function renderEmpAnnouncements(list) {
+        let box = document.getElementById('empNoticeBox');
+        if (!box) return;
+        if (!list || list.length === 0) {
+            box.classList.add('hidden');
+            return;
+        }
+        let latest = list[0];
+        document.getElementById('empNoticeTitle').innerText = latest.title || 'ประกาศจาก HR';
+        document.getElementById('empNoticeContent').innerText = latest.content || '';
+        document.getElementById('empNoticeTime').innerText = (latest.created_at || '') + (latest.author ? ' โดย ' + latest.author : '');
+        
+        let imgContainer = document.getElementById('empNoticeImgContainer');
+        let imgBtn = document.getElementById('empNoticeImgBtn');
+        if (isValidImageUrl(latest.image_url)) {
+            imgContainer.classList.remove('hidden');
+            imgBtn.onclick = function() { openImageModal(latest.image_url); };
+        } else {
+            imgContainer.classList.add('hidden');
+        }
+        box.classList.remove('hidden');
+    }
+
+    function loadAnnouncements() {
+        fetch(scriptURL, { method: 'POST', body: new URLSearchParams({ action: 'get_announcements' }) })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success' && Array.isArray(res.data)) {
+                allAnnouncements = res.data;
+                renderHrAnnouncementsTable(res.data);
+                renderEmpAnnouncements(res.data);
+            }
+        })
+        .catch(err => console.error("Error loading announcements:", err));
+    }
+
+    function renderHrAnnouncementsTable(list) {
+        let tbody = document.getElementById('tb-announcements-hr');
+        if (!tbody) return;
+        if (!list || list.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center" style="color:var(--gray);">ยังไม่มีรายการประกาศข่าวสาร</td></tr>';
+            return;
+        }
+        let html = '';
+        list.forEach(a => {
+            let imgBtn = isValidImageUrl(a.image_url) ? `<button class="btn-primary" onclick="openImageModal('${a.image_url}')" style="padding:3px 8px; font-size:11px;">🖼️ ดูรูป</button>` : '-';
+            html += `<tr>
+                <td>${a.created_at || '-'}</td>
+                <td><b>${a.title || '-'}</b><br><span style="font-size:12px; color:#475569;">${a.content || ''}</span></td>
+                <td>${imgBtn}</td>
+                <td><button class="btn-outline" onclick="deleteAnnouncement(${a.id})" style="padding:3px 8px; font-size:11px;">🗑️ ลบ</button></td>
+            </tr>`;
+        });
+        tbody.innerHTML = html;
+    }
+
+    function postAnnouncement() {
+        let title = document.getElementById('ancTitle').value.trim();
+        let content = document.getElementById('ancContent').value.trim();
+        let fileInput = document.getElementById('ancFile');
+        let msg = document.getElementById('ancMsg');
+
+        if (!title && !content) return alert("กรุณาระบุหัวข้อหรือข้อความประกาศอย่างน้อย 1 รายการ");
+
+        let sendData = {
+            action: 'add_announcement',
+            title: title || 'ประกาศจาก HR',
+            content: content,
+            author: currentUser || 'HR'
+        };
+
+        if (fileInput && fileInput.files && fileInput.files[0]) {
+            let file = fileInput.files[0];
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                sendData.imageBase64 = e.target.result;
+                executePostAnnouncement(sendData);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            executePostAnnouncement(sendData);
+        }
+    }
+
+    function executePostAnnouncement(data) {
+        let msg = document.getElementById('ancMsg');
+        if (msg) msg.innerText = "กำลังบันทึกและโพสต์ประกาศ...";
+        fetch(scriptURL, { method: 'POST', body: new URLSearchParams(data) })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+                if (msg) msg.innerText = "✅ โพสต์ประกาศข่าวสารเรียบร้อยแล้ว!";
+                document.getElementById('ancTitle').value = '';
+                document.getElementById('ancContent').value = '';
+                if (document.getElementById('ancFile')) document.getElementById('ancFile').value = '';
+                loadAnnouncements();
+                setTimeout(() => { if (msg) msg.innerText = ''; }, 3000);
+            } else {
+                alert("เกิดข้อผิดพลาด: " + (res.message || "ไม่สามารถโพสต์ประกาศได้"));
+                if (msg) msg.innerText = '';
+            }
+        })
+        .catch(err => {
+            alert("เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์");
+            if (msg) msg.innerText = '';
+        });
+    }
+
+    function deleteAnnouncement(id) {
+        if (!confirm("คุณต้องการลบประกาศรายการนี้ใช่หรือไม่?")) return;
+        fetch(scriptURL, { method: 'POST', body: new URLSearchParams({ action: 'delete_announcement', id: id }) })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+                alert("ลบประกาศเรียบร้อยแล้ว!");
+                loadAnnouncements();
+            }
+        });
+    }
 </script>
 </body>
 </html>

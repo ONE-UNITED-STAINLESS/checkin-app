@@ -925,18 +925,24 @@
         if (!isValidImageUrl(url)) return '';
         let u = url.trim();
 
-        if (u.startsWith('http://') || u.startsWith('https://')) {
-            if (u.includes('ngrok-free.dev') || u.includes('ngrok.io')) {
-                u = u.replace(/^http:\/\//i, 'https://');
-            }
-            return u;
-        }
-
         let baseUrl = scriptURL.replace(/\/api\/?$/, '');
         if (baseUrl.includes('ngrok-free.dev') || baseUrl.includes('ngrok.io')) {
             baseUrl = baseUrl.replace(/^http:\/\//i, 'https://');
         } else if (window.location.protocol === 'https:' && baseUrl.startsWith('http://')) {
             baseUrl = baseUrl.replace(/^http:\/\//i, 'https://');
+        }
+
+        // If URL contains /uploads/, strip localhost / old domain and attach to active baseUrl
+        if (u.includes('/uploads/')) {
+            const relPath = u.substring(u.indexOf('/uploads/'));
+            return baseUrl + relPath;
+        }
+
+        if (u.startsWith('http://') || u.startsWith('https://')) {
+            if (u.includes('ngrok-free.dev') || u.includes('ngrok.io')) {
+                u = u.replace(/^http:\/\//i, 'https://');
+            }
+            return u;
         }
 
         if (u.startsWith('/')) return baseUrl + u;
@@ -1547,13 +1553,13 @@
                 let reason = i[6] ? i[6] : '-';
                 let imgUrl = isValidImageUrl(i[7]) ? i[7] : (isValidImageUrl(i[6]) ? i[6] : null);
                 if(imgUrl === i[6]) reason = i[5] ? i[5] : '-';
-                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
+                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #cbd5e1; padding:2px 6px; border-radius:4px; font-size:9px; color:var(--dark); font-weight:600; display:inline-block; margin-top:3px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
                 tb.innerHTML += `<tr>
-                    <td><b>แก้ไขเวลา</b><br><span style="font-size:11px; color:var(--gray);">${i[3]}</span></td>
-                    <td style="font-size:12px;">${i[4]} ${i[5] ? i[5] : ''}<br><span style="font-size:11px; color:var(--gray)">เหตุผล: ${reason}</span><br>${imgHtml}</td>
-                    <td style="font-size:11px;">${i[1].split(' ')[0]}</td>
-                    <td><span class="status-${i[8]}">${statusText}</span></td>
+                    <td style="padding:6px 4px; font-size:11px;"><b style="color:var(--dark);">แก้ไขเวลา</b><br><span style="font-size:10px; color:#64748b;">${i[3]}</span></td>
+                    <td style="padding:6px 4px; font-size:11px; line-height:1.3;"><span style="color:#1e293b; font-weight:600;">${i[4]}</span><br><span style="font-size:10px; color:#64748b;">เหตุผล: ${reason}</span><br>${imgHtml}</td>
+                    <td style="padding:6px 4px; font-size:10px; color:#475569; white-space:nowrap;">${i[1].split(' ')[0]}</td>
+                    <td style="padding:6px 4px; text-align:center;"><span class="status-${i[8]}" style="font-size:10px; padding:2px 6px; border-radius:10px; display:inline-block;">${statusText}</span></td>
                 </tr>`; 
             });
 
@@ -1564,13 +1570,13 @@
                 
                 let reason = i[7] ? i[7] : '-';
                 let imgUrl = isValidImageUrl(i[8]) ? i[8] : (isValidImageUrl(i[9]) ? i[9] : null);
-                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #d1d5db; padding:3px 8px; border-radius:6px; font-size:10px; color:var(--dark); font-weight:600; display:inline-block; margin-top:4px;">🖼️ ดูรูป/เอกสาร</button>` : '';
+                let imgHtml = imgUrl ? `<button onclick="openImageModal('${imgUrl}')" style="cursor:pointer; border:none; background:#eef2f6; border:1px solid #cbd5e1; padding:2px 6px; border-radius:4px; font-size:9px; color:var(--dark); font-weight:600; display:inline-block; margin-top:3px;">🖼️ ดูรูป/เอกสาร</button>` : '';
 
                 tb.innerHTML += `<tr>
-                    <td><b>ลางาน</b><br><span style="font-size:11px; color:var(--gray);">${i[3]}</span></td>
-                    <td style="font-size:12px;">${i[4]} ถึง<br>${i[5]}<br><span style="font-size:11px; color:var(--gray)">เหตุผล: ${reason}</span><br>${imgHtml}</td>
-                    <td style="font-size:11px;">${i[1].split(' ')[0]}</td>
-                    <td><span class="status-${i[10]}">${statusText}</span></td>
+                    <td style="padding:6px 4px; font-size:11px;"><b style="color:var(--dark);">ลางาน</b><br><span style="font-size:10px; color:#64748b;">${i[3]}</span></td>
+                    <td style="padding:6px 4px; font-size:11px; line-height:1.3;"><span style="color:#1e293b; font-weight:600;">${i[4]} ถึง ${i[5]}</span><br><span style="font-size:10px; color:#64748b;">เหตุผล: ${reason}</span><br>${imgHtml}</td>
+                    <td style="padding:6px 4px; font-size:10px; color:#475569; white-space:nowrap;">${i[1].split(' ')[0]}</td>
+                    <td style="padding:6px 4px; text-align:center;"><span class="status-${i[10]}" style="font-size:10px; padding:2px 6px; border-radius:10px; display:inline-block;">${statusText}</span></td>
                 </tr>`; 
             });
         });
@@ -2554,13 +2560,20 @@
                 popImg.src = cachedData;
                 imgWrap.classList.remove('hidden');
             } else {
-                popImg.src = fullUrl;
                 imgWrap.classList.remove('hidden');
+                popImg.style.opacity = '0.5';
 
-                // Cache image in web storage (localStorage) for zero loading time
+                // Fetch image blob first to bypass Ngrok warning page and convert to ObjectURL
                 fetch(fullUrl, { headers: { 'ngrok-skip-browser-warning': 'true' } })
-                .then(res => res.blob())
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP error ' + res.status);
+                    return res.blob();
+                })
                 .then(blob => {
+                    let objectUrl = URL.createObjectURL(blob);
+                    popImg.src = objectUrl;
+                    popImg.style.opacity = '1';
+
                     let reader = new FileReader();
                     reader.onloadend = function() {
                         try {
@@ -2569,7 +2582,11 @@
                     };
                     reader.readAsDataURL(blob);
                 })
-                .catch(err => console.error("Image cache error:", err));
+                .catch(err => {
+                    console.error("Popup image load error:", err);
+                    popImg.src = fullUrl;
+                    popImg.style.opacity = '1';
+                });
             }
         } else {
             imgWrap.classList.add('hidden');

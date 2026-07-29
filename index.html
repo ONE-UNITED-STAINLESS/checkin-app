@@ -433,19 +433,6 @@
         </div>
         
         <div id="emp-tab-checkin">
-            <!-- กล่องแสดงประกาศจาก HR สำหรับพนักงาน -->
-            <div id="empNoticeBox" class="hidden" style="margin-bottom: 15px; background: linear-gradient(135deg, #eff6ff, #dbeafe); border: 1px solid #bfdbfe; border-radius: 12px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                    <h3 style="margin: 0; font-size: 15px; color: #1e40af; font-weight: 700;">📢 ประกาศข่าวสารจาก HR / บริษัท</h3>
-                    <span id="empNoticeTime" style="font-size: 11px; color: #3b82f6; font-weight: 500;">-</span>
-                </div>
-                <h4 id="empNoticeTitle" style="margin: 0 0 6px 0; font-size: 16px; color: var(--dark); font-weight: 700;">-</h4>
-                <p id="empNoticeContent" style="margin: 0; font-size: 13px; color: #334155; line-height: 1.5; white-space: pre-wrap;">-</p>
-                <div id="empNoticeImgContainer" class="hidden" style="margin-top: 10px;">
-                    <button id="empNoticeImgBtn" onclick="" class="btn-primary" style="padding: 4px 12px; font-size: 11px; border-radius: 6px;">🖼️ ดูรูปภาพประกาศแนบ</button>
-                </div>
-            </div>
-
             <div class="digital-clock" id="mainClockEmp">00:00:00</div>
 
             <div style="background: #f0fdf4; padding: 12px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
@@ -478,14 +465,16 @@
         </div>
 
         <div id="emp-tab-history" class="hidden">
-            <!-- ส่วนเพิ่ม: สถิติรายเดือนพนักงาน -->
-            <h3 style="margin-top:0; color:var(--dark); font-size: 16px;">📊 สรุปสถิติเดือนนี้</h3>
-            <div class="grid-cards" style="margin-bottom: 15px;">
-                <div class="card" style="padding: 10px;"><h3 id="empSumPresent" style="font-size:24px; color:var(--success);">0</h3><p>มาทำงาน (วัน)</p></div>
-                <div class="card" style="padding: 10px;"><h3 id="empSumLate" style="font-size:24px; color:var(--warning);">0</h3><p>สาย (ครั้ง)</p></div>
-                <div class="card" style="padding: 10px;"><h3 id="empSumOt" style="font-size:24px; color:#3b82f6;">0</h3><p>ทำ OT (ครั้ง)</p></div>
-                <div class="card" style="padding: 10px;"><h3 id="empSumLeave" style="font-size:24px; color:var(--primary);">0</h3><p>ลา (วัน)</p></div>
-                <div class="card" style="padding: 10px;"><h3 id="empSumAbsent" style="font-size:24px; color:var(--danger);">0</h3><p>ขาดงาน (วัน)</p></div>
+            <!-- ส่วนเพิ่ม: สถิติรายเดือนพนักงานแบบกะทัดรัด -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <h3 style="margin:0; color:var(--dark); font-size: 14px; font-weight:700;">📊 สรุปสถิติเดือนนี้</h3>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-bottom: 10px;">
+                <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="empSumPresent" style="margin:0; font-size:16px; font-weight:700; color:var(--success);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">มาทำงาน</p></div>
+                <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="empSumLate" style="margin:0; font-size:16px; font-weight:700; color:var(--warning);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">สาย</p></div>
+                <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="empSumOt" style="margin:0; font-size:16px; font-weight:700; color:#3b82f6;">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">ทำ OT</p></div>
+                <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="empSumLeave" style="margin:0; font-size:16px; font-weight:700; color:var(--primary);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">ลา</p></div>
+                <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="empSumAbsent" style="margin:0; font-size:16px; font-weight:700; color:var(--danger);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">ขาดงาน</p></div>
             </div>
             <div id="myCalendarContainer"></div>
             <div class="mt-3" style="background:#f9fafb; padding:15px; border-radius:8px; border:1px solid #e5e7eb;">
@@ -637,15 +626,17 @@
                 <label style="font-weight:600; font-size: 14px;">เลือกพนักงาน:</label>
                 <select id="hrCalUserSelect" onchange="renderHrCalendar()"></select>
             </div>
-            <!-- ส่วนเพิ่ม: สถิติรายเดือน HR -->
-            <div id="hrStatsBox" class="hidden">
-                <h3 style="margin-top:0; color:var(--dark); font-size: 16px;">📊 สรุปสถิติประจำเดือน</h3>
-                <div class="grid-cards" style="margin-bottom: 15px;">
-                    <div class="card" style="padding: 10px;"><h3 id="hrSumPresent" style="font-size:24px; color:var(--success);">0</h3><p>มาทำงาน (วัน)</p></div>
-                    <div class="card" style="padding: 10px;"><h3 id="hrSumLate" style="font-size:24px; color:var(--warning);">0</h3><p>สาย (ครั้ง)</p></div>
-                    <div class="card" style="padding: 10px;"><h3 id="hrSumOt" style="font-size:24px; color:#3b82f6;">0</h3><p>ทำ OT (ครั้ง)</p></div>
-                    <div class="card" style="padding: 10px;"><h3 id="hrSumLeave" style="font-size:24px; color:var(--primary);">0</h3><p>ลา (วัน)</p></div>
-                    <div class="card" style="padding: 10px;"><h3 id="hrSumAbsent" style="font-size:24px; color:var(--danger);">0</h3><p>ขาดงาน (วัน)</p></div>
+            <!-- ส่วนเพิ่ม: สถิติรายเดือน HR แบบกะทัดรัด -->
+            <div id="hrStatsBox" class="hidden" style="margin-bottom: 10px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                    <h3 style="margin:0; color:var(--dark); font-size: 14px; font-weight:700;">📊 สรุปสถิติประจำเดือน</h3>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">
+                    <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="hrSumPresent" style="margin:0; font-size:16px; font-weight:700; color:var(--success);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">มาทำงาน</p></div>
+                    <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="hrSumLate" style="margin:0; font-size:16px; font-weight:700; color:var(--warning);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">สาย</p></div>
+                    <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="hrSumOt" style="margin:0; font-size:16px; font-weight:700; color:#3b82f6;">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">ทำ OT</p></div>
+                    <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="hrSumLeave" style="margin:0; font-size:16px; font-weight:700; color:var(--primary);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">ลา</p></div>
+                    <div style="background:white; padding:6px 4px; border-radius:8px; text-align:center; border:1px solid #e5e7eb;"><h4 id="hrSumAbsent" style="margin:0; font-size:16px; font-weight:700; color:var(--danger);">0</h4><p style="margin:2px 0 0 0; font-size:10px; color:var(--gray); font-weight:500;">ขาดงาน</p></div>
                 </div>
             </div>
             <div id="hrCalendarContainer"></div>

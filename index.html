@@ -42,6 +42,11 @@
         .app-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--light-gray); padding-bottom: 15px; margin-bottom: 20px; }
         
         .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+        .emp-tabs-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-bottom: 15px; width: 100%; }
+        .emp-tabs-container .tab-btn { padding: 8px 2px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 8px; text-align: center; width: 100%; margin: 0; }
+        @media (max-width: 480px) {
+            .emp-tabs-container .tab-btn { padding: 7px 1px; font-size: 11px; }
+        }
         .tab-btn { background: var(--light-gray); color: var(--gray); border-radius: 8px; margin: 0; padding: 10px 15px; box-shadow: none; flex-grow: 1; text-align: center;} 
         .tab-btn:hover { background: #e5e7eb; color: var(--dark); transform: none; } .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 6px rgba(67, 97, 238, 0.2); }
 
@@ -425,10 +430,10 @@
             </div>
         </div>
         
-        <div class="tabs-container">
+        <div class="tabs-container emp-tabs-container">
             <button class="tab-btn active" id="btnEmpTabCheckin" onclick="switchEmpTab('checkin')">📷 ลงเวลา</button>
             <button class="tab-btn" id="btnEmpTabHistory" onclick="switchEmpTab('history')">📅 ปฏิทิน</button>
-            <button class="tab-btn" id="btnEmpTabRequest" onclick="switchEmpTab('request')">📝 คำขอ/สถานะ</button>
+            <button class="tab-btn" id="btnEmpTabRequest" onclick="switchEmpTab('request')">📝 คำขอ</button>
             <button class="tab-btn" id="btnEmpTabHolidays" onclick="switchEmpTab('holidays')">🏖️ วันหยุด</button>
         </div>
         
@@ -545,12 +550,19 @@
             </div>
             <p id="reqMsg" class="text-center mt-3" style="color:var(--success); font-weight:600;"></p>
 
-            <hr style="margin:20px 0; border:1px solid #e5e7eb;">
-            <h3 style="margin-top:0; color:var(--dark); font-size: 16px;">📋 สถานะคำขอของฉัน</h3>
-            <button onclick="loadMyRequests()" class="btn-grey" style="width: 100%; margin-bottom: 10px;">🔄 รีเฟรชสถานะ</button>
-            <div class="table-responsive">
-                <table>
-                    <thead><tr><th>ประเภท</th><th>รายละเอียด</th><th>วันที่ส่ง</th><th>สถานะ HR</th></tr></thead>
+            <hr style="margin:15px 0; border:1px solid #e5e7eb;">
+            <h3 style="margin-top:0; color:var(--dark); font-size: 15px; font-weight:700;">📋 สถานะคำขอของฉัน</h3>
+            <button onclick="loadMyRequests()" class="btn-grey" style="width: 100%; margin-bottom: 8px; padding: 6px; font-size: 12px;">🔄 รีเฟรชสถานะ</button>
+            <div class="table-responsive" style="border-radius:10px; border:1px solid #e5e7eb; overflow-x:auto;">
+                <table style="font-size:12px; width:100%; min-width:320px;">
+                    <thead>
+                        <tr style="background:#f8fafc;">
+                            <th style="padding:8px 6px; font-size:11px; width:22%;">ประเภท</th>
+                            <th style="padding:8px 6px; font-size:11px; width:38%;">รายละเอียด</th>
+                            <th style="padding:8px 6px; font-size:11px; width:24%;">วันที่ส่ง</th>
+                            <th style="padding:8px 6px; font-size:11px; width:16%; text-align:center;">สถานะ</th>
+                        </tr>
+                    </thead>
                     <tbody id="tb-my-reqs"></tbody>
                 </table>
             </div>
@@ -2494,28 +2506,26 @@
     let currentActivePopupAncId = null;
 
     function renderEmpAnnouncements(list) {
-        let box = document.getElementById('empNoticeBox');
-        if (!box) return;
-        if (!list || list.length === 0) {
-            box.classList.add('hidden');
-            return;
-        }
+        if (!list || list.length === 0) return;
         let latest = list[0];
         currentActivePopupAncId = latest.id;
 
-        document.getElementById('empNoticeTitle').innerText = latest.title || 'ประกาศจาก HR';
-        document.getElementById('empNoticeContent').innerText = latest.content || '';
-        document.getElementById('empNoticeTime').innerText = (latest.created_at || '') + (latest.author ? ' โดย ' + latest.author : '');
-        
-        let imgContainer = document.getElementById('empNoticeImgContainer');
-        let imgBtn = document.getElementById('empNoticeImgBtn');
-        if (isValidImageUrl(latest.image_url)) {
-            imgContainer.classList.remove('hidden');
-            imgBtn.onclick = function() { openImageModal(latest.image_url); };
-        } else {
-            imgContainer.classList.add('hidden');
+        let box = document.getElementById('empNoticeBox');
+        if (box) {
+            document.getElementById('empNoticeTitle').innerText = latest.title || 'ประกาศจาก HR';
+            document.getElementById('empNoticeContent').innerText = latest.content || '';
+            document.getElementById('empNoticeTime').innerText = (latest.created_at || '') + (latest.author ? ' โดย ' + latest.author : '');
+            
+            let imgContainer = document.getElementById('empNoticeImgContainer');
+            let imgBtn = document.getElementById('empNoticeImgBtn');
+            if (isValidImageUrl(latest.image_url)) {
+                if (imgContainer) imgContainer.classList.remove('hidden');
+                if (imgBtn) imgBtn.onclick = function() { openImageModal(latest.image_url); };
+            } else {
+                if (imgContainer) imgContainer.classList.add('hidden');
+            }
+            box.classList.remove('hidden');
         }
-        box.classList.remove('hidden');
 
         // ================= 24-HOUR AUTO POPUP LOGIC =================
         let hideUntil = localStorage.getItem('hide_anc_' + latest.id);

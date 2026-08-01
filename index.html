@@ -2676,11 +2676,21 @@
       const price = isHead ? (headPrice * months) : (promoPrices[months] || (59 * months));
       document.getElementById('yt-renew-amount').value = price;
 
-      let baseDate = m.expiry_date ? new Date(m.expiry_date) : new Date();
-      if (isNaN(baseDate.getTime()) || baseDate < new Date()) baseDate = new Date();
+      let baseDate = m.expiry_date ? parseAnyDate(m.expiry_date) : null;
+      if (!baseDate || isNaN(baseDate.getTime())) {
+        baseDate = new Date();
+      }
 
-      const newDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + months, baseDate.getDate());
-      document.getElementById('yt-renew-newdate').value = newDate.toISOString().split('T')[0];
+      const targetDay = baseDate.getDate();
+      const newDate = new Date(baseDate.getFullYear(), baseDate.getMonth() + months, targetDay);
+      if (newDate.getDate() !== targetDay) {
+        newDate.setDate(0); // ปรับเป็นวันสุดท้ายของเดือนในกรณีที่เดือนนั้นไม่มีวันที่ targetDay
+      }
+
+      const yyyy = newDate.getFullYear();
+      const mm = String(newDate.getMonth() + 1).padStart(2, '0');
+      const dd = String(newDate.getDate()).padStart(2, '0');
+      document.getElementById('yt-renew-newdate').value = `${yyyy}-${mm}-${dd}`;
     }
 
     async function handleYTRenewSubmit(e) {

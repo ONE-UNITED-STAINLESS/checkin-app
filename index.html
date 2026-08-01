@@ -393,6 +393,24 @@
         </div>
       </div>
 
+      <!-- Batch Selection & Email Notification Toolbar -->
+      <div id="yt-batch-toolbar" class="glass-card rounded-2xl p-4 shadow-md border border-sky-200 bg-sky-50/80 flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-2 cursor-pointer font-bold text-slate-800 text-sm">
+            <input type="checkbox" id="yt-select-all-checkbox" onchange="toggleSelectAllYTMembers(this.checked)" class="w-5 h-5 accent-sky-600 rounded cursor-pointer">
+            <span>เลือกทั้งหมด (<span id="yt-selected-count">0</span> บัญชี)</span>
+          </label>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button type="button" onclick="sendBatchEmailReminders()" class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+            <span>✉️</span> ส่งอีเมลแจ้งเตือนให้คนที่เลือก (<span id="yt-batch-email-count">0</span>)
+          </button>
+          <button type="button" onclick="copySelectedMemberEmails()" class="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold rounded-xl text-xs border border-slate-300 shadow-sm transition-all flex items-center gap-1 cursor-pointer">
+            <span>📋</span> คัดลอกอีเมลที่เลือก
+          </button>
+        </div>
+      </div>
+
       <!-- YT Members Card View List (Matching User Image Layout) -->
       <div id="yt-cards-list" class="space-y-4">
         <!-- Rendered via JS -->
@@ -1374,6 +1392,85 @@
       }
     }
 
+    function toggleSelectAllYTMembers(checked) {
+      const checkboxes = document.querySelectorAll('.yt-member-select-checkbox');
+      checkboxes.forEach(cb => cb.checked = checked);
+      updateSelectedYTCount();
+    }
+
+    function updateSelectedYTCount() {
+      const checkboxes = document.querySelectorAll('.yt-member-select-checkbox:checked');
+      const count = checkboxes.length;
+      if (document.getElementById('yt-selected-count')) document.getElementById('yt-selected-count').innerText = count;
+      if (document.getElementById('yt-batch-email-count')) document.getElementById('yt-batch-email-count').innerText = count;
+      
+      const allCheckboxes = document.querySelectorAll('.yt-member-select-checkbox');
+      const selectAllCb = document.getElementById('yt-select-all-checkbox');
+      if (selectAllCb) {
+        selectAllCb.checked = allCheckboxes.length > 0 && count === allCheckboxes.length;
+      }
+    }
+
+    async function sendBatchEmailReminders() {
+      const checkboxes = document.querySelectorAll('.yt-member-select-checkbox:checked');
+      const selectedIds = Array.from(checkboxes).map(cb => cb.getAttribute('data-id')).filter(Boolean);
+
+      if (selectedIds.length === 0) {
+        showToast('กรุณาติ๊กเลือกอย่างน้อย 1 สมาชิกที่ต้องการส่งอีเมล', 'info');
+        return;
+      }
+
+      if (!confirm(`คุณต้องการส่งอีเมลแจ้งเตือนไปยังสมาชิกที่เลือกทั้ง ${selectedIds.length} รายการ ใช่หรือไม่?`)) return;
+
+      showToast(`กำลังเริ่มส่งอีเมลแจ้งเตือน 0/${selectedIds.length}...`, 'info');
+      let successCount = 0;
+      let failCount = 0;
+
+      for (let i = 0; i < selectedIds.length; i++) {
+        const id = selectedIds[i];
+        const m = ytMembers.find(item => item.id === id);
+        if (!m || !m.email) continue;
+
+        try {
+          const res = await fetch(`${API_URL}/send-email-reminder`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ member_id: id, type: 'manual' })
+          });
+          const result = await res.json();
+          if (result.status === 'success') {
+            successCount++;
+          } else {
+            failCount++;
+          }
+        } catch (e) {
+          failCount++;
+        }
+
+        showToast(`กำลังส่งอีเมลแจ้งเตือน (${i + 1}/${selectedIds.length})...`, 'info');
+      }
+
+      if (successCount > 0) {
+        showToast(`ส่งอีเมลแจ้งเตือนสำเร็จ ${successCount} รายการ ${failCount > 0 ? `(ล้มเหลว ${failCount})` : ''}`, 'success');
+        fetchAllData();
+      } else {
+        showToast('ส่งอีเมลไม่สำเร็จ กรุณาตรวจสอบการตั้งค่า SMTP อีเมลผู้ส่งในเมนูตั้งค่า', 'error');
+      }
+    }
+
+    function copySelectedMemberEmails() {
+      const checkboxes = document.querySelectorAll('.yt-member-select-checkbox:checked');
+      const emails = Array.from(checkboxes).map(cb => cb.getAttribute('data-email')).filter(Boolean);
+
+      if (emails.length === 0) {
+        showToast('กรุณาติ๊กเลือกอย่างน้อย 1 สมาชิกเพื่อคัดลอกอีเมล', 'info');
+        return;
+      }
+
+      const emailStr = emails.join(', ');
+      copyToClipboard(emailStr, `คัดลอกอีเมลที่เลือกทั้ง ${emails.length} รายการเรียบร้อยแล้ว`);
+    }
+
     let currentScheduleTimes = ["09:00", "19:00"];
 
     function renderScheduleTimeChips() {
@@ -1969,6 +2066,7 @@
               <div class="flex-1 space-y-2.5 w-full">
                 <!-- Header Badges Line -->
                 <div class="flex items-center gap-2 flex-wrap">
+                  <input type="checkbox" class="yt-member-select-checkbox w-5 h-5 accent-sky-600 rounded cursor-pointer mr-1" data-id="${m.id}" data-email="${escapeHtml(m.email)}" onchange="updateSelectedYTCount()" title="เลือกบัญชีนี้สำหรับส่งอีเมล">
                   <span class="text-2xl">${isHead ? '👑' : '👤'}</span>
                   <h3 class="text-lg font-black text-slate-900 tracking-tight">${escapeHtml(m.name)}</h3>
                   
@@ -2112,6 +2210,7 @@
           </div>
         `;
       }).join('');
+      updateSelectedYTCount();
     }
 
     async function togglePayment(id) {

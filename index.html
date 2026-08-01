@@ -801,6 +801,24 @@
                     <textarea id="setting-email-message-body" rows="3" class="w-full p-3 rounded-xl border border-slate-300 text-xs font-mono focus:outline-none focus:border-sky-500 bg-white" placeholder="กรอกข้อความเกริ่นนำในอีเมล..."></textarea>
                   </div>
 
+                  <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
+                    <label class="block text-xs font-bold text-sky-800 mb-1">🏷️ ปรับแต่งชื่อหัวข้อในตารางข้อมูลอีเมล (Table Row Labels)</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                      <div>
+                        <label class="block font-semibold text-slate-600 mb-1">ป้ายประเภทสมาชิก</label>
+                        <input type="text" id="setting-email-lbl-member-type" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-bold focus:outline-none focus:border-sky-500 bg-white" placeholder="เช่น ประเภทสมาชิก:">
+                      </div>
+                      <div>
+                        <label class="block font-semibold text-slate-600 mb-1">ป้ายวันหมดอายุ</label>
+                        <input type="text" id="setting-email-lbl-expiry-date" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-bold focus:outline-none focus:border-sky-500 bg-white" placeholder="เช่น วันหมดอายุ:">
+                      </div>
+                      <div>
+                        <label class="block font-semibold text-slate-600 mb-1">ป้ายยอดชำระต่ออายุ</label>
+                        <input type="text" id="setting-email-lbl-renewal-price" class="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 font-bold focus:outline-none focus:border-sky-500 bg-white" placeholder="เช่น ยอดชำระต่ออายุ:">
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">6. รายละเอียดบัญชีโอนเงิน (บรรทัดละ 1 รายการ)</label>
                     <textarea id="setting-email-bank-details" rows="3" class="w-full p-3 rounded-xl border border-slate-300 text-xs font-mono focus:outline-none focus:border-sky-500 bg-white" placeholder="• ธนาคารกรุงไทย: 522-0-78033-6&#10;• พร้อมเพย์ (PromptPay): 0987859016&#10;• ชื่อบัญชี: คณิต เสวะกะ"></textarea>
@@ -1477,6 +1495,9 @@
       if (document.getElementById('setting-email-bank-details')) document.getElementById('setting-email-bank-details').value = settings.email_bank_details || '• ธนาคารกรุงไทย: 522-0-78033-6\n• พร้อมเพย์ (PromptPay): 0987859016\n• ชื่อบัญชี: คณิต เสวะกะ';
       if (document.getElementById('setting-email-bank-footer')) document.getElementById('setting-email-bank-footer').value = settings.email_bank_footer || '* เมื่อโอนเงินเรียบร้อยแล้ว กรุณาส่งสลิปโอนเงินกลับมาทาง LINE หรือแชทร้านค้าเพื่อต่ออายุทันทีครับ';
       if (document.getElementById('setting-email-footer-text')) document.getElementById('setting-email-footer-text').value = settings.email_footer_text || 'KP Shop Manager System • ขอบคุณที่ใช้บริการครับ 🙏';
+      if (document.getElementById('setting-email-lbl-member-type')) document.getElementById('setting-email-lbl-member-type').value = settings.email_lbl_member_type || 'ประเภทสมาชิก:';
+      if (document.getElementById('setting-email-lbl-expiry-date')) document.getElementById('setting-email-lbl-expiry-date').value = settings.email_lbl_expiry_date || 'วันหมดอายุ:';
+      if (document.getElementById('setting-email-lbl-renewal-price')) document.getElementById('setting-email-lbl-renewal-price').value = settings.email_lbl_renewal_price || 'ยอดชำระต่ออายุ:';
     }
 
     async function handleSaveMessageTemplates(e) {
@@ -1491,7 +1512,10 @@
         email_bank_title: document.getElementById('setting-email-bank-title').value.trim(),
         email_bank_details: document.getElementById('setting-email-bank-details').value,
         email_bank_footer: document.getElementById('setting-email-bank-footer').value,
-        email_footer_text: document.getElementById('setting-email-footer-text').value.trim()
+        email_footer_text: document.getElementById('setting-email-footer-text').value.trim(),
+        email_lbl_member_type: document.getElementById('setting-email-lbl-member-type') ? document.getElementById('setting-email-lbl-member-type').value.trim() : 'ประเภทสมาชิก:',
+        email_lbl_expiry_date: document.getElementById('setting-email-lbl-expiry-date') ? document.getElementById('setting-email-lbl-expiry-date').value.trim() : 'วันหมดอายุ:',
+        email_lbl_renewal_price: document.getElementById('setting-email-lbl-renewal-price') ? document.getElementById('setting-email-lbl-renewal-price').value.trim() : 'ยอดชำระต่ออายุ:'
       };
 
       try {

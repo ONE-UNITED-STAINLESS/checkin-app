@@ -1221,6 +1221,24 @@
       return `${proto}//${host}:3001/api`;
     }
 
+    function normalizeApiUrl(rawUrl) {
+      if (!rawUrl) return getAutoApiUrl();
+      let url = String(rawUrl).trim();
+      url = url.replace(/\/+$/, '');
+      if (url.endsWith('/status')) {
+        url = url.substring(0, url.length - 7);
+      }
+      url = url.replace(/\/+$/, '');
+
+      const currentHost = window.location.hostname;
+      if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+        if (url.includes('localhost') || url.includes('127.0.0.1')) {
+          return getAutoApiUrl();
+        }
+      }
+      return url || getAutoApiUrl();
+    }
+
     const DEFAULT_API_URL = getAutoApiUrl();
     let API_URL = DEFAULT_API_URL;
     const savedUrl = localStorage.getItem('kpshop_api_url');
@@ -1228,11 +1246,11 @@
         !savedUrl.includes('localhost:3000') && 
         !savedUrl.includes('margarine-saved-encrypt') &&
         !savedUrl.includes('extruding-jukebox-choosy.ngrok-free.dev')) {
-      API_URL = savedUrl;
+      API_URL = normalizeApiUrl(savedUrl);
     } else {
       API_URL = DEFAULT_API_URL;
-      localStorage.setItem('kpshop_api_url', API_URL);
     }
+    localStorage.setItem('kpshop_api_url', API_URL);
     
     // Core State
     let ytMembers = [];
@@ -1407,6 +1425,8 @@
     }
 
     async function tryReconnectDB() {
+      API_URL = normalizeApiUrl(API_URL);
+      localStorage.setItem('kpshop_api_url', API_URL);
       showToast('กำลังพยายามเชื่อมต่อ HeidiSQL...', 'info');
       try {
         const res = await fetch(`${API_URL}/reconnect`);
@@ -1416,8 +1436,13 @@
           fetchAllData();
         } else {
           showToast(result.message || 'ยังไม่สามารถเชื่อมต่อ MySQL พอร์ต 3306 ได้', 'error');
+          fetchAllData(true);
         }
       } catch(e) {
+        showToast('กำลังลองดึงข้อมูลจาก API อีกครั้ง...', 'info');
+        fetchAllData(true);
+      }
+    }
         showToast('ยังไม่พบบริการ MySQL ในเครื่อง (เปิดบริการ MySQL / XAMPP)', 'error');
       }
     }
@@ -3453,10 +3478,12 @@
     }
 
     function testAPIConnection() {
-      API_URL = document.getElementById('setting-api-url').value.trim();
+      const rawVal = document.getElementById('setting-api-url').value;
+      API_URL = normalizeApiUrl(rawVal);
+      document.getElementById('setting-api-url').value = API_URL;
       localStorage.setItem('kpshop_api_url', API_URL);
-      showToast('บันทึก URL และกำลังเชื่อมต่อใหม่...', 'success');
-      fetchAllData();
+      showToast('บันทึก URL และกำลังทดสอบเชื่อมต่อ...', 'success');
+      fetchAllData(true);
     }
 
     // ----------------------------------------------------

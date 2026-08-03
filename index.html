@@ -636,7 +636,7 @@
           <div>
             <label class="block text-sm font-bold text-slate-700 mb-1">Backend API Endpoint URL</label>
             <div class="flex gap-2">
-              <input type="text" id="setting-api-url" value="https://extruding-jukebox-choosy.ngrok-free.dev/api" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:border-blue-500">
+              <input type="text" id="setting-api-url" value="http://localhost:3001/api" class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 font-mono text-sm focus:outline-none focus:border-blue-500">
               <button onclick="testAPIConnection()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-sm transition-all shadow-sm">
                 🔌 ทดสอบเชื่อมต่อ
               </button>
@@ -1212,10 +1212,19 @@
       return originalFetch(url, options);
     };
 
-    const DEFAULT_API_URL = 'https://extruding-jukebox-choosy.ngrok-free.dev/api';
+    function getAutoApiUrl() {
+      const host = window.location.hostname || 'localhost';
+      const proto = window.location.protocol.startsWith('http') ? window.location.protocol : 'http:';
+      return `${proto}//${host}:3001/api`;
+    }
+
+    const DEFAULT_API_URL = getAutoApiUrl();
     let API_URL = DEFAULT_API_URL;
     const savedUrl = localStorage.getItem('kpshop_api_url');
-    if (savedUrl && savedUrl.startsWith('http') && !savedUrl.includes('localhost:3000') && !savedUrl.includes('margarine-saved-encrypt')) {
+    if (savedUrl && savedUrl.startsWith('http') && 
+        !savedUrl.includes('localhost:3000') && 
+        !savedUrl.includes('margarine-saved-encrypt') &&
+        !savedUrl.includes('extruding-jukebox-choosy.ngrok-free.dev')) {
       API_URL = savedUrl;
     } else {
       API_URL = DEFAULT_API_URL;
@@ -1319,10 +1328,52 @@
     // Data Fetching Engine (100% Strict HeidiSQL / MySQL)
     async function fetchAllData(showLoader = false) {
       if (showLoader) toggleLoader(true);
+
+      const tryFetch = async (url) => {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        try {
+          const res = await fetch(`${url}/initial-data`, { signal: controller.signal });
+          clearTimeout(timeoutId);
+          if (!res.ok) throw new Error('API server returned HTTP ' + res.status);
+          return await res.json();
+        } catch (e) {
+          clearTimeout(timeoutId);
+          throw e;
+        }
+      };
+
       try {
-        const res = await fetch(`${API_URL}/initial-data`);
-        if (!res.ok) throw new Error('API server returned HTTP ' + res.status);
-        const result = await res.json();
+        let result;
+        try {
+          result = await tryFetch(API_URL);
+        } catch (firstErr) {
+          console.warn(`Primary API_URL (${API_URL}) failed:`, firstErr.message);
+          const autoUrl = getAutoApiUrl();
+          const fallbackLocal = 'http://localhost:3001/api';
+          
+          if (API_URL !== autoUrl) {
+            try {
+              result = await tryFetch(autoUrl);
+              API_URL = autoUrl;
+              localStorage.setItem('kpshop_api_url', API_URL);
+            } catch (autoErr) {
+              if (API_URL !== fallbackLocal && autoUrl !== fallbackLocal) {
+                result = await tryFetch(fallbackLocal);
+                API_URL = fallbackLocal;
+                localStorage.setItem('kpshop_api_url', API_URL);
+              } else {
+                throw autoErr;
+              }
+            }
+          } else if (API_URL !== fallbackLocal) {
+            result = await tryFetch(fallbackLocal);
+            API_URL = fallbackLocal;
+            localStorage.setItem('kpshop_api_url', API_URL);
+          } else {
+            throw firstErr;
+          }
+        }
         
         if (result.status === 'success' && result.data) {
           ytMembers = result.data.members || [];
@@ -1331,15 +1382,21 @@
           settings = result.data.settings || settings;
           paymentLogs = result.data.logs || [];
           
-          document.getElementById('db-status-badge').className = 'px-3.5 py-1.5 rounded-full border shadow-sm font-semibold flex items-center gap-2 bg-emerald-950/60 border-emerald-500/40 text-emerald-300';
-          document.getElementById('db-status-text').innerText = 'HeidiSQL Connected';
+          const dbBadge = document.getElementById('db-status-badge');
+          if (dbBadge) dbBadge.className = 'px-3.5 py-1.5 rounded-full border shadow-sm font-semibold flex items-center gap-2 bg-emerald-950/60 border-emerald-500/40 text-emerald-300';
+          const dbText = document.getElementById('db-status-text');
+          if (dbText) dbText.innerText = 'HeidiSQL Connected';
+          const settingInput = document.getElementById('setting-api-url');
+          if (settingInput) settingInput.value = API_URL;
         } else {
           throw new Error(result.message || 'ไม่สามารถเชื่อมต่อ HeidiSQL ได้');
         }
       } catch (err) {
         console.warn('Backend API / HeidiSQL connection error:', err.message);
-        document.getElementById('db-status-badge').className = 'px-3.5 py-1.5 rounded-full border shadow-sm font-semibold flex items-center gap-2 bg-rose-950/60 border-rose-500/40 text-rose-300 hover:scale-105 transition-all cursor-pointer';
-        document.getElementById('db-status-text').innerText = 'Disconnected (กดเพื่อลองเชื่อมใหม่)';
+        const dbBadge = document.getElementById('db-status-badge');
+        if (dbBadge) dbBadge.className = 'px-3.5 py-1.5 rounded-full border shadow-sm font-semibold flex items-center gap-2 bg-rose-950/60 border-rose-500/40 text-rose-300 hover:scale-105 transition-all cursor-pointer';
+        const dbText = document.getElementById('db-status-text');
+        if (dbText) dbText.innerText = 'Disconnected (กดเพื่อลองเชื่อมใหม่)';
       } finally {
         toggleLoader(false);
         renderAllViews();

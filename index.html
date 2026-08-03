@@ -1215,6 +1215,9 @@
     function getAutoApiUrl() {
       const host = window.location.hostname || 'localhost';
       const proto = window.location.protocol.startsWith('http') ? window.location.protocol : 'http:';
+      if (host.includes('github.io') || host.includes('vercel.app') || host.includes('netlify.app')) {
+        return 'https://kpshop.kppremium.shop/api';
+      }
       if (window.location.port === '' || window.location.port === '80' || window.location.port === '443') {
         return `${proto}//${host}/api`;
       }
@@ -1231,7 +1234,11 @@
       url = url.replace(/\/+$/, '');
 
       const currentHost = window.location.hostname;
-      if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+      if (currentHost.includes('github.io')) {
+        if (url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('http:')) {
+          return 'https://kpshop.kppremium.shop/api';
+        }
+      } else if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
         if (url.includes('localhost') || url.includes('127.0.0.1')) {
           return getAutoApiUrl();
         }

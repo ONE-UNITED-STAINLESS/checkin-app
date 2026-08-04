@@ -1216,7 +1216,7 @@
       const host = window.location.hostname || 'localhost';
       const proto = window.location.protocol.startsWith('http') ? window.location.protocol : 'http:';
       if (host.includes('github.io') || host.includes('vercel.app') || host.includes('netlify.app')) {
-        return 'https://147.50.253.134/api';
+        return 'https://circuit-content-wild-beautiful.trycloudflare.com/api';
       }
       if (window.location.port === '' || window.location.port === '80' || window.location.port === '443') {
         return `${proto}//${host}/api`;
@@ -1228,15 +1228,19 @@
       if (!rawUrl) return getAutoApiUrl();
       let url = String(rawUrl).trim();
       url = url.replace(/\/+$/, '');
-      if (url.endsWith('/status')) {
-        url = url.substring(0, url.length - 7);
+      
+      const badEndings = ['/products', '/status', '/members', '/initial-data', '/reconnect', '/agents'];
+      for (const ending of badEndings) {
+        if (url.endsWith(ending)) {
+          url = url.substring(0, url.length - ending.length);
+        }
       }
       url = url.replace(/\/+$/, '');
 
       const currentHost = window.location.hostname;
       if (currentHost.includes('github.io')) {
-        if (url.includes('localhost') || url.includes('127.0.0.1') || url.startsWith('http:')) {
-          return 'https://147.50.253.134/api';
+        if (url.includes('localhost') || url.includes('127.0.0.1') || url.includes('147.50.253.134') || url.startsWith('http:')) {
+          return 'https://circuit-content-wild-beautiful.trycloudflare.com/api';
         }
       } else if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
         if (url.includes('localhost') || url.includes('127.0.0.1')) {
